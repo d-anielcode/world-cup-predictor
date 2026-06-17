@@ -14,6 +14,7 @@ _STAGE_RE = re.compile(r"^▪\s+(.*\S)\s*$")
 # "Sun Nov 20"  (weekday month day, no year)
 _DATE_RE = re.compile(r"^[A-Z][a-z]{2}\s+[A-Z][a-z]{2}\s+\d{1,2}\s*$")
 # "  19:00   Qatar  0-2 (0-2)  Ecuador  @ Al Bayt Stadium, Al Khor"
+# (2014+ format: kickoff time only; the date is on a separate preceding line)
 _MATCH_RE = re.compile(
     r"^\s*\d{1,2}:\d{2}\s+"            # kickoff time
     r"(?P<home>.+?)\s+"               # home team (non-greedy)
@@ -21,6 +22,19 @@ _MATCH_RE = re.compile(
     r"(?:\s+\([\d\-]+\))?\s+"          # optional (halftime)
     r"(?P<away>.+?)"                  # away team
     r"(?:\s+@\s+(?P<venue>.+?))?\s*$"  # optional @ venue
+)
+# "Fri Jun 11 16:00   South Africa  1-1  Mexico  @ Soccer City, Johannesburg" (2010)
+# "Fri Jun 9    Germany  4-2 (2-1)  Costa Rica  @ ..."  (2002-2006: no kickoff time)
+# (pre-2014 format: weekday + date [+ optional time] inline on the match line)
+_MATCH_INLINE_RE = re.compile(
+    r"^\s*[A-Z][a-z]{2}\s+"           # weekday
+    r"(?P<mon>[A-Z][a-z]{2})\s+(?P<day>\d{1,2})\s+"  # month + day
+    r"(?:\d{1,2}:\d{2}\s+)?"          # optional kickoff time
+    r"(?P<home>.+?)\s+"
+    r"(?P<hg>\d+)-(?P<ag>\d+)"
+    r"(?:\s+\([\d\-]+\))?\s+"
+    r"(?P<away>.+?)"
+    r"(?:\s+@\s+(?P<venue>.+?))?\s*$"
 )
 _YEAR_RE = re.compile(r"(\d{4})")
 
@@ -52,6 +66,26 @@ def parse_cup_txt(text: str, competition: str) -> list[Match]:
             current_date = dateparser.parse(
                 f"{line.strip()} {year}", dayfirst=False
             ).date()
+            continue
+        inline = _MATCH_INLINE_RE.match(line)
+        if inline:
+            matches.append(
+                Match(
+                    match_date=dateparser.parse(
+                        f"{inline.group('mon')} {inline.group('day')} {year}",
+                        dayfirst=False,
+                    ).date(),
+                    home_team=inline.group("home").strip(),
+                    away_team=inline.group("away").strip(),
+                    home_goals=int(inline.group("hg")),
+                    away_goals=int(inline.group("ag")),
+                    competition=competition,
+                    stage=stage,
+                    venue=(inline.group("venue") or "").strip() or None,
+                    played=True,
+                    source="openfootball",
+                )
+            )
             continue
         mm = _MATCH_RE.match(line)
         if mm and current_date is not None:
