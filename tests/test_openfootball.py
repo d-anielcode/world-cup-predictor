@@ -28,6 +28,69 @@ def test_year_inferred_for_december_rollover():
     assert m.match_date == date(2022, 11, 25)
 
 
+def test_parses_2014_2018_home_v_away_format():
+    # 2014/2018 files: date on its own line, then "<time> UTC-N  Home v Away  score".
+    text = """= World Cup 2014
+
+▪ Group A
+Thu Jun 12
+  17:00 UTC-3  Brazil v Croatia   3-1 (1-1)       @ Arena de São Paulo, São Paulo
+"""
+    matches = parse_cup_txt(text, competition="World Cup 2014")
+    assert len(matches) == 1
+    m = matches[0]
+    assert m.match_date == date(2014, 6, 12)
+    assert m.home_team == "Brazil"
+    assert m.away_team == "Croatia"
+    assert m.home_goals == 3
+    assert m.away_goals == 1
+    assert m.venue == "Arena de São Paulo, São Paulo"
+
+
+def test_parses_finals_with_extra_time_and_penalties():
+    # cup_finals.txt: regulation/ET score is the first N-N; penalties decide the
+    # winner but goals scored = the first N-N. Trailing "# seeding" comment ignored.
+    text = """= World Cup 2014
+
+▪ Round of 16
+Sat Jun 28
+ 13:00 UTC-3  Brazil      1-1 a.e.t. (1-1, 1-1), 3-2 pen.   Chile    @ Estádio Mineirão, Belo Horizonte   # 1A - 2B
+"""
+    matches = parse_cup_txt(text, competition="World Cup 2014")
+    assert len(matches) == 1
+    m = matches[0]
+    assert m.home_team == "Brazil"
+    assert m.away_team == "Chile"
+    assert m.home_goals == 1
+    assert m.away_goals == 1
+    assert m.venue == "Estádio Mineirão, Belo Horizonte"
+
+
+def test_parses_finals_aet_without_trailing_dot():
+    # Some files write "a.e.t" without the trailing period.
+    text = """= World Cup 2018
+
+▪ Round of 16
+Mon Jul 2
+ 17:00  Japan      1-1 a.e.t (1-1, 1-0), 1-3 pen.   Croatia   @ Rostov Arena
+"""
+    m = parse_cup_txt(text, competition="World Cup 2018")[0]
+    assert m.home_team == "Japan"
+    assert m.away_team == "Croatia"
+    assert (m.home_goals, m.away_goals) == (1, 1)
+
+
+def test_normalizes_team_names_across_sources():
+    text = """= World Cup 2022
+
+▪ Group B
+Mon Nov 21
+  19:00     United States  1-1 (0-1)  Wales   @ Ahmad Bin Ali Stadium
+"""
+    m = parse_cup_txt(text, competition="World Cup 2022")[0]
+    assert m.home_team == "USA"   # normalized from "United States"
+
+
 def test_parses_pre_2014_inline_date_format():
     # 1930-2010 openfootball files put the weekday/date/time inline on the
     # match line (no separate date line, no halftime parenthetical).

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import re
 
 from touchline import config
 from touchline.data import openfootball, worldcupjson
 from touchline.models import Match
 from touchline.storage.db import Database
+
+_YEAR_RE = re.compile(r"(\d{4})")
 
 
 def run_ingest(db: Database, historical: list[Match], live: list[Match]) -> int:
@@ -18,8 +21,9 @@ def _gather_historical() -> list[Match]:
     repo = openfootball.refresh_repo(config.CACHE_DIR / "openfootball")
     matches: list[Match] = []
     for f in openfootball.find_cup_files(repo):
-        # Competition label derived from the tournament folder name.
-        competition = f.parent.name.replace("--", " ").replace("-", " ").title()
+        # Uniform "World Cup YYYY" label (matches worldcupjson) from the folder year.
+        year_m = _YEAR_RE.search(f.parent.name)
+        competition = f"World Cup {year_m.group(1)}" if year_m else f.parent.name
         matches.extend(openfootball.parse_cup_txt(f.read_text(encoding="utf-8"), competition))
     return matches
 
