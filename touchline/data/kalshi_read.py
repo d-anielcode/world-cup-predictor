@@ -23,7 +23,8 @@ def parse_price(value: str | None) -> float:
 def market_to_quote(raw: dict, series_ticker: str) -> MarketQuote:
     yes_bid = parse_price(raw.get("yes_bid"))
     yes_ask = parse_price(raw.get("yes_ask"))
-    yes_price = round((yes_bid + yes_ask) / 2, 4) if (yes_bid or yes_ask) else 0.0
+    sides = [p for p in (yes_bid, yes_ask) if p > 0.0]
+    yes_price = round(sum(sides) / len(sides), 4) if sides else 0.0
     return MarketQuote(
         ticker=raw["ticker"],
         series_ticker=series_ticker,
@@ -61,11 +62,16 @@ class KalshiReadClient:
         return base64.b64encode(signature).decode()
 
     def _headers(self, method: str, path: str) -> dict:
+        if self._private_key is None:
+            raise RuntimeError(
+                "Kalshi private key not loaded — set KALSHI_PRIVATE_KEY_PATH."
+            )
         ts = str(int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000))
         return {
             "KALSHI-ACCESS-KEY": self._api_key_id,
             "KALSHI-ACCESS-TIMESTAMP": ts,
             "KALSHI-ACCESS-SIGNATURE": self._sign(ts, method, path),
+            "Accept": "application/json",
         }
 
     def _get(self, path: str) -> dict:
@@ -95,6 +101,12 @@ class KalshiReadClient:
 
     def quotes_for_series(self, series_ticker: str) -> list[MarketQuote]:
         return [market_to_quote(m, series_ticker) for m in self.get_markets(series_ticker)]
+
+    def __enter__(self) -> "KalshiReadClient":
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self.close()
 
     def close(self) -> None:
         self._client.close()
