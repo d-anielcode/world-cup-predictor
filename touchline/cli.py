@@ -54,6 +54,9 @@ def main(argv: list[str] | None = None) -> int:
         db = Database(config.DB_PATH)
         db.init_schema()
         matches = db.all_matches()
+        if not matches:
+            print("No matches in the database. Run `touchline ingest` first.")
+            return 1
         elo_path = config.CACHE_DIR / "elo.csv"
         elo = load_elo(elo_path) if elo_path.is_file() else EloTable()
         ratings = fit_ratings(

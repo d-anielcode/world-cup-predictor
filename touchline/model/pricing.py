@@ -14,7 +14,10 @@ class MarketProbs:
     draw: float
     away: float
     btts_yes: float
-    over: dict[float, float]
+    over: dict[float, float]            # total line -> P(total goals > line)
+    # handicap line applied to home -> P(home covers). Negative line = home giving
+    # goals (P(margin > -line)). See prob_home_handicap. Plan 3 must confirm the
+    # Kalshi spread field's sign before mapping these keys to contracts.
     home_handicap: dict[float, float]
 
 

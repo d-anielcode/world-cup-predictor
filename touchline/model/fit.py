@@ -15,7 +15,7 @@ _ELO_SCALE = 400.0
 # Regularizer strengths are per-effective-match (scaled by the sum of decay weights
 # inside the objective) so they stay comparable as the match count grows.
 _CENTER_PENALTY = 100.0  # soft identifiability constraint: mean attack/defense -> 0
-_RHO_BOUND = 0.99
+_RHO_BOUND = 0.20  # DC rho lives in roughly [-0.15, 0.05] for football; generous headroom
 
 
 def _decay_weight(match_day: date, as_of: date, half_life_days: float) -> float:

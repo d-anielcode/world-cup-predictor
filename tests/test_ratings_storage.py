@@ -16,6 +16,17 @@ def test_ratings_roundtrip(tmp_path):
     assert abs(loaded.rho - (-0.06)) < 1e-9
 
 
+def test_save_ratings_keeps_defense_only_teams(tmp_path):
+    # A team present only in the defense dict must not be silently dropped.
+    db = Database(tmp_path / "t.db")
+    db.init_schema()
+    db.save_ratings(Ratings(attack={"USA": 0.3}, defense={"USA": 0.2, "Extra": -0.3},
+                            home_adv=0.2, rho=-0.05))
+    loaded = db.load_ratings()
+    assert loaded.defense["Extra"] == -0.3
+    assert loaded.attack["Extra"] == 0.0   # defaulted, not lost
+
+
 def test_save_ratings_replaces_previous(tmp_path):
     db = Database(tmp_path / "t.db")
     db.init_schema()

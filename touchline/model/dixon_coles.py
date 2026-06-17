@@ -27,5 +27,7 @@ def scoreline_matrix(lam: float, mu: float, rho: float, max_goals: int = 10) -> 
     m[0, 1] *= tau(0, 1, lam, mu, rho)
     m[1, 0] *= tau(1, 0, lam, mu, rho)
     m[1, 1] *= tau(1, 1, lam, mu, rho)
+    # Guard: at extreme rho a tau correction can drive a low-score cell negative.
+    m = np.clip(m, 0.0, None)
     total = m.sum()
     return m / total if total > 0 else m

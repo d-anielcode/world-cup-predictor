@@ -79,10 +79,11 @@ class Database:
         with self._connect() as conn:
             conn.execute("DELETE FROM team_ratings")
             conn.execute("DELETE FROM model_params")
+            all_teams = ratings.attack.keys() | ratings.defense.keys()
             conn.executemany(
                 "INSERT INTO team_ratings (team, attack, defense) VALUES (?,?,?)",
-                [(t, ratings.attack[t], ratings.defense.get(t, 0.0))
-                 for t in ratings.attack],
+                [(t, ratings.attack.get(t, 0.0), ratings.defense.get(t, 0.0))
+                 for t in all_teams],
             )
             conn.executemany(
                 "INSERT INTO model_params (key, value) VALUES (?,?)",
