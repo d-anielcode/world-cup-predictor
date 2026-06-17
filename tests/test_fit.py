@@ -34,7 +34,7 @@ def test_fit_recovers_strength_ordering():
     r = fit_ratings(matches, elo, half_life_days=400, prior_weight=0.01,
                     as_of=date(2026, 6, 1))
     assert r.attack["Strong"] > r.attack["Mid"] > r.attack["Weak"]
-    assert r.defense["Strong"] > r.defense["Weak"]
+    assert r.defense["Strong"] > r.defense["Mid"] > r.defense["Weak"]
 
 
 def test_unplayed_matches_are_ignored():
@@ -50,9 +50,12 @@ def test_unplayed_matches_are_ignored():
 
 
 def test_elo_prior_dominates_for_team_with_no_games():
+    # Two no-game teams: a high-Elo Ghost and a neutral-Elo NeutralGhost. The
+    # prior must actually move Ghost above NeutralGhost (not just above data teams).
     matches = _synthetic_matches()
     elo = EloTable(by_norm={"strong": 1500.0, "mid": 1500.0, "weak": 1500.0,
-                            "ghost": 2300.0})
+                            "ghost": 2300.0, "neutralghost": 1500.0})
     r = fit_ratings(matches, elo, half_life_days=400, prior_weight=5.0,
-                    as_of=date(2026, 6, 1), extra_teams=["Ghost"])
+                    as_of=date(2026, 6, 1), extra_teams=["Ghost", "NeutralGhost"])
     assert r.attack["Ghost"] > r.attack["Weak"]
+    assert r.attack["Ghost"] > r.attack["NeutralGhost"]
