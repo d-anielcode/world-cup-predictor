@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "venue": "MetLife Stadium",
+    "location": "New York",
+    "status": "completed",
+    "stage_name": "Group A",
+    "datetime": "2026-06-12T19:00:00Z",
+    "winner": "USA",
+    "winner_code": "USA",
+    "home_team": {"country": "USA", "name": "United States", "goals": 2, "penalties": 0},
+    "away_team": {"country": "WAL", "name": "Wales", "goals": 1, "penalties": 0}
+  },
+  {
+    "id": 2,
+    "venue": "SoFi Stadium",
+    "location": "Los Angeles",
+    "status": "future_scheduled",
+    "stage_name": "Group A",
+    "datetime": "2026-06-16T22:00:00Z",
+    "winner": null,
+    "winner_code": null,
+    "home_team": {"country": "USA", "name": "United States", "goals": null, "penalties": null},
+    "away_team": {"country": "MEX", "name": "Mexico", "goals": null, "penalties": null}
+  }
+]
