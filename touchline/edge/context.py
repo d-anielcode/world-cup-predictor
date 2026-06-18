@@ -29,10 +29,18 @@ def _travel_and_rest(team, when, venue, history):
 
 
 def build_context(
-    home: str, away: str, when: date, venue_name: str, history: list[Match]
+    home: str, away: str, when: date, venue_name: str, history: list[Match],
+    wbgt_c: float | None = None,
 ) -> FactorContext:
-    """Build a FactorContext for an upcoming fixture. wbgt_c is left None (Plan 4)."""
-    venue = get_venue(venue_name)
+    """Build a FactorContext for an upcoming fixture.
+
+    `wbgt_c` is the heat estimate (None if unavailable). Unknown venue names (e.g.
+    historical stadiums absent from the 2026 table) yield a neutral context rather
+    than raising, so the same code path works for backtests over historical data."""
+    try:
+        venue = get_venue(venue_name)
+    except KeyError:
+        return FactorContext(wbgt_c=wbgt_c)
     travel_h, rest_h = _travel_and_rest(home, when, venue, history)
     travel_a, rest_a = _travel_and_rest(away, when, venue, history)
     return FactorContext(
@@ -41,7 +49,7 @@ def build_context(
         altitude_m=venue.altitude_m,
         home_altitude_acclimatized=is_host_country(home) and venue.country == home,
         away_altitude_acclimatized=is_host_country(away) and venue.country == away,
-        wbgt_c=None,
+        wbgt_c=wbgt_c,
         rest_days_home=rest_h,
         rest_days_away=rest_a,
     )

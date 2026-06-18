@@ -19,6 +19,8 @@ from touchline.model.ratings import Ratings
 from touchline.models import Match
 from touchline.overlay.squad import load_overlay, fixture_multipliers
 from touchline.report.render import render_markdown, render_json
+from touchline.backtest.harness import backtest as run_backtest
+from touchline.backtest.calibrate import calibrate
 from touchline.storage.db import Database
 
 _YEAR_RE = re.compile(r"(\d{4})")
@@ -91,11 +93,21 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ingest", help="Refresh all data sources into SQLite")
     fit_p = sub.add_parser("fit-ratings", help="Fit Dixon-Coles ratings from stored matches")
-    fit_p.add_argument("--half-life-days", type=float, default=540.0)
+    # Defaults calibrated via `backtest --calibrate` on 2018+ WC matches
+    # (best log-loss at half_life=900, prior_weight=0.05; longer memory wins for
+    # stable national teams). Re-run calibration as the dataset grows.
+    fit_p.add_argument("--half-life-days", type=float, default=900.0)
     fit_p.add_argument("--prior-weight", type=float, default=0.05)
     price_p = sub.add_parser("price", help="Compute edges vs a quotes CSV and write a report")
     price_p.add_argument("--quotes", required=True, help="Path to a market quotes CSV")
     price_p.add_argument("--top", type=int, default=None)
+    bt_p = sub.add_parser("backtest", help="Score the model on completed matches")
+    bt_p.add_argument("--eval-start", default="2018-01-01",
+                      help="Only score matches on/after this ISO date")
+    bt_p.add_argument("--half-life-days", type=float, default=900.0)
+    bt_p.add_argument("--prior-weight", type=float, default=0.05)
+    bt_p.add_argument("--calibrate", action="store_true",
+                      help="Grid-search half-life x prior-weight")
     args = parser.parse_args(argv)
 
     if args.command == "ingest":
@@ -148,6 +160,32 @@ def main(argv: list[str] | None = None) -> int:
         (out_dir / "report.md").write_text(md, encoding="utf-8")
         (out_dir / "report.json").write_text(js, encoding="utf-8")
         print(f"Wrote {len(picks)} ranked picks to {out_dir / 'report.md'}.")
+        return 0
+
+    if args.command == "backtest":
+        db = Database(config.DB_PATH)
+        db.init_schema()
+        matches = db.all_matches()
+        elo_path = config.CACHE_DIR / "elo.csv"
+        elo = load_elo(elo_path) if elo_path.is_file() else EloTable()
+        eval_start = date.fromisoformat(args.eval_start)
+        if args.calibrate:
+            res = calibrate(matches, eval_start=eval_start, elo=elo,
+                            half_lifes=[180.0, 360.0, 540.0, 900.0],
+                            prior_weights=[0.01, 0.05, 0.2, 0.5])
+            print("Calibration grid (half_life, prior_weight, log_loss):")
+            for hl, pw, ll in sorted(res.grid, key=lambda r: r[2]):
+                print(f"  hl={hl:>6} pw={pw:<5} log_loss={ll:.4f}")
+            print(f"Best: half_life={res.best_half_life}, "
+                  f"prior_weight={res.best_prior_weight}, log_loss={res.best_log_loss:.4f}")
+        else:
+            res = run_backtest(matches, eval_start=eval_start,
+                               half_life_days=args.half_life_days,
+                               prior_weight=args.prior_weight, elo=elo)
+            print(f"Backtest on {res.n_matches} matches "
+                  f"(>= {args.eval_start}): Brier={res.brier:.4f}, "
+                  f"log_loss={res.log_loss:.4f} "
+                  f"(uniform baseline: Brier=0.6667, log_loss=1.0986).")
         return 0
 
     return 1
