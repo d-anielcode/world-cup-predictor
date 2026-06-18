@@ -15,14 +15,18 @@ def price_fixture(
     max_goals: int = 10,
     total_lines: list[float] | None = None,
     handicap_lines: list[float] | None = None,
+    lam_mult: float = 1.0,
+    mu_mult: float = 1.0,
 ) -> MarketProbs:
     """Full pipeline: ratings -> expected goals -> factor adjustment ->
-    Dixon-Coles scoreline matrix -> market probabilities.
+    overlay multipliers -> Dixon-Coles scoreline matrix -> market probabilities.
 
-    `total_lines`/`handicap_lines` override the default market lines so callers
-    (e.g. Plan 3) can price the exact lines a Kalshi market offers. `max_goals=10`
-    is ample for football (truncation mass beyond it is ~1e-10)."""
+    `lam_mult`/`mu_mult` are squad-overlay goal multipliers (home/away). They are
+    applied after the environmental factors. `total_lines`/`handicap_lines` override
+    the default market lines so callers can price the exact lines a market offers.
+    `max_goals=10` is ample for football (truncation mass beyond it is ~1e-10)."""
     lam, mu = ratings.expected_goals(home, away, apply_home_adv=apply_home_adv)
     lam, mu = adjust_expected_goals(lam, mu, ctx)
+    lam, mu = lam * lam_mult, mu * mu_mult
     matrix = scoreline_matrix(lam, mu, ratings.rho, max_goals=max_goals)
     return price_matrix(matrix, total_lines=total_lines, handicap_lines=handicap_lines)
