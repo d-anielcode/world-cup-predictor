@@ -1,0 +1,6 @@
+home,away,market_type,side,line,price,ticker
+USA,Wales,1x2,home,,0.55,KXWC-USAWAL-USA
+USA,Wales,1x2,draw,,0.27,KXWC-USAWAL-DRAW
+USA,Wales,total,over,2.5,0.48,KXWC-USAWAL-OV25
+USA,Wales,btts,yes,,0.50,KXWC-USAWAL-BTTS
+USA,Wales,handicap,home,-1.5,0.30,KXWC-USAWAL-H15
