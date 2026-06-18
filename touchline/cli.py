@@ -93,7 +93,10 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ingest", help="Refresh all data sources into SQLite")
     fit_p = sub.add_parser("fit-ratings", help="Fit Dixon-Coles ratings from stored matches")
-    fit_p.add_argument("--half-life-days", type=float, default=540.0)
+    # Defaults calibrated via `backtest --calibrate` on 2018+ WC matches
+    # (best log-loss at half_life=900, prior_weight=0.05; longer memory wins for
+    # stable national teams). Re-run calibration as the dataset grows.
+    fit_p.add_argument("--half-life-days", type=float, default=900.0)
     fit_p.add_argument("--prior-weight", type=float, default=0.05)
     price_p = sub.add_parser("price", help="Compute edges vs a quotes CSV and write a report")
     price_p.add_argument("--quotes", required=True, help="Path to a market quotes CSV")
@@ -101,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
     bt_p = sub.add_parser("backtest", help="Score the model on completed matches")
     bt_p.add_argument("--eval-start", default="2018-01-01",
                       help="Only score matches on/after this ISO date")
-    bt_p.add_argument("--half-life-days", type=float, default=540.0)
+    bt_p.add_argument("--half-life-days", type=float, default=900.0)
     bt_p.add_argument("--prior-weight", type=float, default=0.05)
     bt_p.add_argument("--calibrate", action="store_true",
                       help="Grid-search half-life x prior-weight")
