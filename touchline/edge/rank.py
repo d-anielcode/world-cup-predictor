@@ -26,7 +26,9 @@ def rank_picks(
     """
     picks: list[RankedPick] = []
     for home, away, market_type, side, line, e in edges:
-        if e.recommendation != "BUY" or e.edge <= 0:
+        # Drop non-buys, non-positive edges, and zero-confidence picks (a team with
+        # no played matches yields confidence 0 and is pure-prior noise).
+        if e.recommendation != "BUY" or e.edge <= 0 or e.confidence <= 0:
             continue
         picks.append(RankedPick(
             home=home, away=away, market_type=market_type, side=side, line=line,

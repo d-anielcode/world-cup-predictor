@@ -46,11 +46,13 @@ def fixture_multipliers(
 ) -> tuple[float, float]:
     """Return (lam_mult, mu_mult) goal multipliers for a fixture.
 
-    Home goals scale with home attack and away defense; away goals scale with
-    away attack and home defense. Unknown teams contribute 1.0.
+    Both attack_mult and defense_mult are STRENGTH multipliers (>1 = stronger).
+    Home goals rise with home attack strength and fall with away defense strength,
+    so the defensive term divides: home goals scale by home_attack / away_defense,
+    away goals by away_attack / home_defense. Unknown teams contribute 1.0.
     """
     h = overlay.get(home)
     a = overlay.get(away)
     h_att, h_def = (h.attack_mult, h.defense_mult) if h else (1.0, 1.0)
     a_att, a_def = (a.attack_mult, a.defense_mult) if a else (1.0, 1.0)
-    return h_att * a_def, a_att * h_def
+    return h_att / a_def, a_att / h_def

@@ -63,6 +63,11 @@ def run_price(
         totals, handicaps = fixture_lines(quotes, home, away)
         ctx = build_context(home, away, when, venue, history)
         lam_mult, mu_mult = fixture_multipliers(home, away, overlay)
+        # Apply the learned home advantage only when the nominal home team is the
+        # venue's host nation. ASSUMPTION: a host listed as the *away* team would
+        # miss its home edge here (price_fixture only boosts the home side). No
+        # current 2026 fixture triggers this; Plan 4 must handle host-as-away when
+        # the real venue-assigned schedule lands.
         apply_home_adv = ctx.home_altitude_acclimatized
         probs = price_fixture(
             ratings, home, away, apply_home_adv=apply_home_adv, ctx=ctx,
@@ -124,7 +129,6 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "price":
-        from datetime import date as _date
         db = Database(config.DB_PATH)
         db.init_schema()
         ratings = db.load_ratings()
@@ -138,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
                     for m in history if not m.played and m.venue]
         picks, md, js = run_price(
             ratings, overlay, quotes, fixtures, history, dict(team_games),
-            as_of=_date.today().isoformat(), top_n=args.top,
+            as_of=date.today().isoformat(), top_n=args.top,
         )
         out_dir = config.DATA_DIR
         (out_dir / "report.md").write_text(md, encoding="utf-8")

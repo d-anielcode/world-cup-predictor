@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 _LONGSHOT_PRICE = 0.25     # value bets priced below this are down-weighted
 _SAMPLE_TARGET = 20.0      # games-per-team at which sample confidence saturates
-_EDGE_BUY_THRESHOLD = 0.0  # positive edge => BUY
+_EDGE_BUY_THRESHOLD = 0.0  # positive edge => BUY (not a calibration target: any
+                           # positive-EV bet qualifies; tuning happens on confidence)
 
 
 @dataclass
