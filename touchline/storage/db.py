@@ -4,6 +4,7 @@ import sqlite3
 from datetime import date
 from pathlib import Path
 
+from touchline.model.ratings import Ratings
 from touchline.models import Match
 
 _SCHEMA = """
@@ -19,6 +20,15 @@ CREATE TABLE IF NOT EXISTS matches (
     venue       TEXT,
     played      INTEGER NOT NULL,
     source      TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS team_ratings (
+    team    TEXT PRIMARY KEY,
+    attack  REAL NOT NULL,
+    defense REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS model_params (
+    key   TEXT PRIMARY KEY,
+    value REAL NOT NULL
 );
 """
 
@@ -64,6 +74,32 @@ class Database:
                 rows,
             )
         return len(rows)
+
+    def save_ratings(self, ratings: Ratings) -> None:
+        with self._connect() as conn:
+            conn.execute("DELETE FROM team_ratings")
+            conn.execute("DELETE FROM model_params")
+            all_teams = ratings.attack.keys() | ratings.defense.keys()
+            conn.executemany(
+                "INSERT INTO team_ratings (team, attack, defense) VALUES (?,?,?)",
+                [(t, ratings.attack.get(t, 0.0), ratings.defense.get(t, 0.0))
+                 for t in all_teams],
+            )
+            conn.executemany(
+                "INSERT INTO model_params (key, value) VALUES (?,?)",
+                [("home_adv", ratings.home_adv), ("rho", ratings.rho)],
+            )
+
+    def load_ratings(self) -> Ratings:
+        with self._connect() as conn:
+            rows = conn.execute("SELECT team, attack, defense FROM team_ratings").fetchall()
+            params = dict(conn.execute("SELECT key, value FROM model_params").fetchall())
+        return Ratings(
+            attack={r["team"]: r["attack"] for r in rows},
+            defense={r["team"]: r["defense"] for r in rows},
+            home_adv=float(params.get("home_adv", 0.0)),
+            rho=float(params.get("rho", 0.0)),
+        )
 
     def all_matches(self) -> list[Match]:
         with self._connect() as conn:
