@@ -1,0 +1,274 @@
+{
+  "matchday": "2026-06-19",
+  "games": [
+    {
+      "home": "Scotland",
+      "away": "Morocco",
+      "host": false,
+      "model_1x2": {
+        "home": 0.192,
+        "draw": 0.316,
+        "away": 0.492
+      },
+      "model_over2.5": 0.244,
+      "model_over3.5": 0.094,
+      "model_btts": 0.294,
+      "model_home_-1.5": 0.046,
+      "picks": [
+        {
+          "market": 0.569,
+          "side": "under",
+          "line": 2.5,
+          "model": 0.756,
+          "edge": 0.188,
+          "confidence": 0.6,
+          "score": 0.113
+        },
+        {
+          "market": 0.58,
+          "side": "no",
+          "line": null,
+          "model": 0.706,
+          "edge": 0.126,
+          "confidence": 0.6,
+          "score": 0.076
+        },
+        {
+          "market": 0.265,
+          "side": "draw",
+          "line": null,
+          "model": 0.316,
+          "edge": 0.05,
+          "confidence": 1.0,
+          "score": 0.05
+        },
+        {
+          "market": 0.176,
+          "side": "home",
+          "line": null,
+          "model": 0.192,
+          "edge": 0.015,
+          "confidence": 0.71,
+          "score": 0.011
+        }
+      ],
+      "actual": null
+    },
+    {
+      "home": "Brazil",
+      "away": "Haiti",
+      "host": false,
+      "model_1x2": {
+        "home": 0.755,
+        "draw": 0.156,
+        "away": 0.089
+      },
+      "model_over2.5": 0.584,
+      "model_over3.5": 0.36,
+      "model_btts": 0.439,
+      "model_home_-1.5": 0.522,
+      "picks": [
+        {
+          "market": 0.509,
+          "side": "under",
+          "line": 3.5,
+          "model": 0.64,
+          "edge": 0.131,
+          "confidence": 0.6,
+          "score": 0.079
+        },
+        {
+          "market": 0.091,
+          "side": "draw",
+          "line": null,
+          "model": 0.156,
+          "edge": 0.066,
+          "confidence": 0.36,
+          "score": 0.024
+        },
+        {
+          "market": 0.045,
+          "side": "away",
+          "line": null,
+          "model": 0.089,
+          "edge": 0.043,
+          "confidence": 0.3,
+          "score": 0.013
+        }
+      ],
+      "actual": null
+    },
+    {
+      "home": "USA",
+      "away": "Australia",
+      "host": true,
+      "model_1x2": {
+        "home": 0.38,
+        "draw": 0.261,
+        "away": 0.359
+      },
+      "model_over2.5": 0.469,
+      "model_over3.5": 0.253,
+      "model_btts": 0.516,
+      "model_home_-1.5": 0.168,
+      "picks": [
+        {
+          "market": 0.602,
+          "side": "away",
+          "line": -1.5,
+          "model": 0.832,
+          "edge": 0.231,
+          "confidence": 1.0,
+          "score": 0.231
+        },
+        {
+          "market": 0.187,
+          "side": "away",
+          "line": null,
+          "model": 0.359,
+          "edge": 0.172,
+          "confidence": 0.75,
+          "score": 0.129
+        },
+        {
+          "market": 0.217,
+          "side": "draw",
+          "line": null,
+          "model": 0.261,
+          "edge": 0.044,
+          "confidence": 0.87,
+          "score": 0.038
+        },
+        {
+          "market": 0.491,
+          "side": "yes",
+          "line": null,
+          "model": 0.516,
+          "edge": 0.025,
+          "confidence": 0.6,
+          "score": 0.015
+        },
+        {
+          "market": 0.517,
+          "side": "under",
+          "line": 2.5,
+          "model": 0.531,
+          "edge": 0.014,
+          "confidence": 0.6,
+          "score": 0.008
+        }
+      ],
+      "actual": null
+    },
+    {
+      "home": "Turkey",
+      "away": "Paraguay",
+      "host": false,
+      "model_1x2": {
+        "home": 0.37,
+        "draw": 0.296,
+        "away": 0.334
+      },
+      "model_over2.5": 0.341,
+      "model_over3.5": 0.155,
+      "model_btts": 0.411,
+      "model_home_-1.5": 0.146,
+      "picks": [
+        {
+          "market": 0.228,
+          "side": "away",
+          "line": null,
+          "model": 0.334,
+          "edge": 0.106,
+          "confidence": 0.91,
+          "score": 0.096
+        },
+        {
+          "market": 0.562,
+          "side": "under",
+          "line": 2.5,
+          "model": 0.659,
+          "edge": 0.097,
+          "confidence": 0.6,
+          "score": 0.058
+        },
+        {
+          "market": 0.282,
+          "side": "draw",
+          "line": null,
+          "model": 0.296,
+          "edge": 0.014,
+          "confidence": 1.0,
+          "score": 0.014
+        }
+      ],
+      "actual": null
+    }
+  ],
+  "top_picks_overall": [
+    {
+      "game": "USA v Australia",
+      "market": "handicap",
+      "side": "away",
+      "line": -1.5,
+      "edge": 0.231,
+      "score": 0.231
+    },
+    {
+      "game": "USA v Australia",
+      "market": "1x2",
+      "side": "away",
+      "line": null,
+      "edge": 0.172,
+      "score": 0.129
+    },
+    {
+      "game": "Scotland v Morocco",
+      "market": "total",
+      "side": "under",
+      "line": 2.5,
+      "edge": 0.188,
+      "score": 0.113
+    },
+    {
+      "game": "Turkey v Paraguay",
+      "market": "1x2",
+      "side": "away",
+      "line": null,
+      "edge": 0.106,
+      "score": 0.096
+    },
+    {
+      "game": "Brazil v Haiti",
+      "market": "total",
+      "side": "under",
+      "line": 3.5,
+      "edge": 0.131,
+      "score": 0.079
+    },
+    {
+      "game": "Scotland v Morocco",
+      "market": "btts",
+      "side": "no",
+      "line": null,
+      "edge": 0.126,
+      "score": 0.076
+    },
+    {
+      "game": "Turkey v Paraguay",
+      "market": "total",
+      "side": "under",
+      "line": 2.5,
+      "edge": 0.097,
+      "score": 0.058
+    },
+    {
+      "game": "Scotland v Morocco",
+      "market": "1x2",
+      "side": "draw",
+      "line": null,
+      "edge": 0.05,
+      "score": 0.05
+    }
+  ]
+}
