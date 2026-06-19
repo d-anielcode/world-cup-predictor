@@ -70,12 +70,13 @@ def fit_ratings(
         defense = p[n:2 * n]
         home_adv = p[2 * n]
         rho = p[2 * n + 1]
-        return attack, defense, home_adv, rho
+        intercept = p[2 * n + 2]
+        return attack, defense, home_adv, rho, intercept
 
     def neg_log_lik(p):
-        attack, defense, home_adv, rho = unpack(p)
-        log_lam = attack[hi] - defense[ai] + home_adv
-        log_mu = attack[ai] - defense[hi]
+        attack, defense, home_adv, rho, intercept = unpack(p)
+        log_lam = intercept + attack[hi] - defense[ai] + home_adv
+        log_mu = intercept + attack[ai] - defense[hi]
         lam = np.exp(log_lam)
         mu = np.exp(log_mu)
         ll = hg * log_lam - lam + ag * log_mu - mu  # Poisson (drop constant log k!)
@@ -91,15 +92,19 @@ def fit_ratings(
         center = _CENTER_PENALTY * wsum * (attack.mean() ** 2 + defense.mean() ** 2)
         return -weighted + ridge + center
 
-    x0 = np.concatenate([prior, prior, [0.25], [-0.05]])
-    bounds = [(None, None)] * (2 * n + 1) + [(-_RHO_BOUND, _RHO_BOUND)]
+    mean_goals = float((hg.mean() + ag.mean()) / 2) if len(played) else 1.3
+    intercept0 = math.log(max(mean_goals, 0.1))
+    x0 = np.concatenate([prior, prior, [0.25], [-0.05], [intercept0]])
+    bounds = ([(None, None)] * (2 * n + 1) + [(-_RHO_BOUND, _RHO_BOUND)]
+              + [(None, None)])
     res = minimize(neg_log_lik, x0, method="L-BFGS-B", bounds=bounds)
     if not res.success:
         warnings.warn(f"fit_ratings: optimizer did not converge: {res.message}")
-    attack, defense, home_adv, rho = unpack(res.x)
+    attack, defense, home_adv, rho, intercept = unpack(res.x)
     return Ratings(
         attack={t: float(attack[idx[t]]) for t in teams},
         defense={t: float(defense[idx[t]]) for t in teams},
         home_adv=float(home_adv),
         rho=float(rho),
+        intercept=float(intercept),
     )
