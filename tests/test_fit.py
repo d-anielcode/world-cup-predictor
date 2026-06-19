@@ -107,3 +107,13 @@ def test_team_rating_not_crushed_by_unrelated_dataset_size():
                         prior_weight=0.05, as_of=date(2026, 6, 1))
     # With an uninformative (empty) prior, Strong must stay clearly above Weak.
     assert r_big.attack["Strong"] - r_big.attack["Weak"] > 1.0
+
+
+def test_fit_converges_without_warning():
+    # The analytic gradient must let the optimizer actually converge (no warning).
+    import warnings
+    matches = _synthetic_matches()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")          # convergence warning -> error
+        fit_ratings(matches, EloTable(), half_life_days=400, prior_weight=0.05,
+                    as_of=date(2026, 6, 1))
