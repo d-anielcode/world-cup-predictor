@@ -69,12 +69,15 @@ def grade(path: Path) -> None:
               f"{g['model_1x2']['home']:.0%}/{g['model_1x2']['draw']:.0%}/{g['model_1x2']['away']:.0%})")
         probs.append((g['model_1x2']['home'], g['model_1x2']['draw'], g['model_1x2']['away']))
         outcomes.append({"home": 0, "draw": 1, "away": 2}[_result(hg, ag)])
-        for pk in g["picks"]:
+        # Grade only the BUY recommendations (sorted best-edge first).
+        buys = sorted((m for m in g["markets"] if m["recommendation"] == "BUY"),
+                      key=lambda m: -m["edge"])
+        for pk in buys:
             res = _grade_pick(pk, hg, ag)
             ln = "" if pk["line"] is None else f" {pk['line']}"
             mark = {"WIN": "[WIN] ", "LOSS": "[LOSS]", "PUSH": "[PUSH]"}.get(res, "[????]")
             print(f"    {mark} {pk['market_type']}:{pk['side']}{ln}  "
-                  f"(edge {pk['edge']*100:+.1f}%, conf {pk['confidence']})  -> {res}")
+                  f"(model {pk['model_prob']:.0%}, edge {pk['edge']*100:+.1f}%, conf {pk['confidence']})  -> {res}")
             wins += res == "WIN"; losses += res == "LOSS"; pushes += res == "PUSH"
         print()
 

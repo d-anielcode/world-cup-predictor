@@ -1,60 +1,93 @@
 {
   "matchday": "2026-06-19",
-  "note": "pre-game model predictions + market lines (vig-removed) for grading",
+  "model": "converged 12k-match fit (data+approx Elo prior)",
   "games": [
     {
       "home": "Scotland",
       "away": "Morocco",
       "host": false,
       "model_1x2": {
-        "home": 0.192,
-        "draw": 0.316,
-        "away": 0.492
+        "home": 0.182,
+        "draw": 0.32,
+        "away": 0.498
       },
-      "model_over2.5": 0.244,
-      "model_over3.5": 0.094,
-      "model_btts": 0.294,
-      "model_home_-1.5": 0.046,
-      "picks": [
+      "markets": [
         {
-          "market_type": "total",
-          "side": "under",
-          "line": 2.5,
-          "model_prob": 0.756,
-          "market_price": 0.569,
-          "edge": 0.188,
-          "confidence": 0.6,
-          "score": 0.113
-        },
-        {
-          "market_type": "btts",
-          "side": "no",
+          "market_type": "1x2",
+          "side": "home",
           "line": null,
-          "model_prob": 0.706,
-          "market_price": 0.58,
-          "edge": 0.126,
-          "confidence": 0.6,
-          "score": 0.076
+          "model_prob": 0.182,
+          "market_price": 0.176,
+          "odds": 450,
+          "edge": 0.006,
+          "confidence": 0.71,
+          "recommendation": "BUY"
         },
         {
           "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model_prob": 0.316,
-          "market_price": 0.265,
-          "edge": 0.05,
+          "model_prob": 0.32,
+          "market_price": 0.266,
+          "odds": 265,
+          "edge": 0.054,
           "confidence": 1.0,
-          "score": 0.05
+          "recommendation": "BUY"
         },
         {
           "market_type": "1x2",
-          "side": "home",
+          "side": "away",
           "line": null,
-          "model_prob": 0.192,
-          "market_price": 0.176,
-          "edge": 0.015,
-          "confidence": 0.71,
-          "score": 0.011
+          "model_prob": 0.498,
+          "market_price": 0.558,
+          "odds": -135,
+          "edge": -0.06,
+          "confidence": 1.0,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "total",
+          "side": "over",
+          "line": 2.5,
+          "model_prob": 0.272,
+          "market_price": 0.431,
+          "odds": 120,
+          "edge": -0.159,
+          "confidence": 0.6,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "total",
+          "side": "under",
+          "line": 2.5,
+          "model_prob": 0.728,
+          "market_price": 0.569,
+          "odds": -150,
+          "edge": 0.159,
+          "confidence": 0.6,
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "btts",
+          "side": "yes",
+          "line": null,
+          "model_prob": 0.326,
+          "market_price": 0.42,
+          "odds": 130,
+          "edge": -0.094,
+          "confidence": 0.6,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "btts",
+          "side": "no",
+          "line": null,
+          "model_prob": 0.674,
+          "market_price": 0.58,
+          "odds": -150,
+          "edge": 0.094,
+          "confidence": 0.6,
+          "recommendation": "BUY"
         }
       ]
     },
@@ -63,44 +96,87 @@
       "away": "Haiti",
       "host": false,
       "model_1x2": {
-        "home": 0.755,
-        "draw": 0.156,
-        "away": 0.089
+        "home": 0.868,
+        "draw": 0.097,
+        "away": 0.035
       },
-      "model_over2.5": 0.584,
-      "model_over3.5": 0.36,
-      "model_btts": 0.439,
-      "model_home_-1.5": 0.522,
-      "picks": [
+      "markets": [
         {
-          "market_type": "total",
-          "side": "under",
-          "line": 3.5,
-          "model_prob": 0.64,
-          "market_price": 0.509,
-          "edge": 0.131,
-          "confidence": 0.6,
-          "score": 0.079
+          "market_type": "1x2",
+          "side": "home",
+          "line": null,
+          "model_prob": 0.868,
+          "market_price": 0.868,
+          "odds": -1000,
+          "edge": 0.001,
+          "confidence": 1.0,
+          "recommendation": "BUY"
         },
         {
           "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model_prob": 0.156,
-          "market_price": 0.091,
-          "edge": 0.066,
-          "confidence": 0.36,
-          "score": 0.024
+          "model_prob": 0.097,
+          "market_price": 0.087,
+          "odds": 1000,
+          "edge": 0.01,
+          "confidence": 0.35,
+          "recommendation": "BUY"
         },
         {
           "market_type": "1x2",
           "side": "away",
           "line": null,
-          "model_prob": 0.089,
+          "model_prob": 0.035,
           "market_price": 0.045,
-          "edge": 0.043,
+          "odds": 2000,
+          "edge": -0.011,
           "confidence": 0.3,
-          "score": 0.013
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "total",
+          "side": "over",
+          "line": 3.5,
+          "model_prob": 0.494,
+          "market_price": 0.491,
+          "odds": -106,
+          "edge": 0.003,
+          "confidence": 0.6,
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "total",
+          "side": "under",
+          "line": 3.5,
+          "model_prob": 0.506,
+          "market_price": 0.509,
+          "odds": -114,
+          "edge": -0.003,
+          "confidence": 0.6,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "handicap",
+          "side": "home",
+          "line": -2.5,
+          "model_prob": 0.487,
+          "market_price": 0.5,
+          "odds": -110,
+          "edge": -0.013,
+          "confidence": 1.0,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "handicap",
+          "side": "away",
+          "line": -2.5,
+          "model_prob": 0.513,
+          "market_price": 0.5,
+          "odds": -110,
+          "edge": 0.013,
+          "confidence": 1.0,
+          "recommendation": "BUY"
         }
       ]
     },
@@ -110,63 +186,108 @@
       "host": true,
       "model_1x2": {
         "home": 0.38,
-        "draw": 0.261,
-        "away": 0.359
+        "draw": 0.285,
+        "away": 0.336
       },
-      "model_over2.5": 0.469,
-      "model_over3.5": 0.253,
-      "model_btts": 0.516,
-      "model_home_-1.5": 0.168,
-      "picks": [
-        {
-          "market_type": "handicap",
-          "side": "away",
-          "line": -1.5,
-          "model_prob": 0.832,
-          "market_price": 0.602,
-          "edge": 0.231,
-          "confidence": 1.0,
-          "score": 0.231
-        },
+      "markets": [
         {
           "market_type": "1x2",
-          "side": "away",
+          "side": "home",
           "line": null,
-          "model_prob": 0.359,
-          "market_price": 0.187,
-          "edge": 0.172,
-          "confidence": 0.75,
-          "score": 0.129
+          "model_prob": 0.38,
+          "market_price": 0.595,
+          "odds": -165,
+          "edge": -0.216,
+          "confidence": 1.0,
+          "recommendation": "PASS"
         },
         {
           "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model_prob": 0.261,
+          "model_prob": 0.285,
           "market_price": 0.217,
-          "edge": 0.044,
+          "odds": 340,
+          "edge": 0.068,
           "confidence": 0.87,
-          "score": 0.038
+          "recommendation": "BUY"
         },
         {
-          "market_type": "btts",
-          "side": "yes",
+          "market_type": "1x2",
+          "side": "away",
           "line": null,
-          "model_prob": 0.516,
-          "market_price": 0.491,
-          "edge": 0.025,
+          "model_prob": 0.336,
+          "market_price": 0.187,
+          "odds": 410,
+          "edge": 0.148,
+          "confidence": 0.75,
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "total",
+          "side": "over",
+          "line": 2.5,
+          "model_prob": 0.45,
+          "market_price": 0.483,
+          "odds": -102,
+          "edge": -0.032,
           "confidence": 0.6,
-          "score": 0.015
+          "recommendation": "PASS"
         },
         {
           "market_type": "total",
           "side": "under",
           "line": 2.5,
-          "model_prob": 0.531,
+          "model_prob": 0.55,
           "market_price": 0.517,
-          "edge": 0.014,
+          "odds": -118,
+          "edge": 0.032,
           "confidence": 0.6,
-          "score": 0.008
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "btts",
+          "side": "yes",
+          "line": null,
+          "model_prob": 0.511,
+          "market_price": 0.491,
+          "odds": -106,
+          "edge": 0.019,
+          "confidence": 0.6,
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "btts",
+          "side": "no",
+          "line": null,
+          "model_prob": 0.489,
+          "market_price": 0.509,
+          "odds": -114,
+          "edge": -0.019,
+          "confidence": 0.6,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "handicap",
+          "side": "home",
+          "line": -1.5,
+          "model_prob": 0.172,
+          "market_price": 0.398,
+          "odds": 170,
+          "edge": -0.226,
+          "confidence": 1.0,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "handicap",
+          "side": "away",
+          "line": -1.5,
+          "model_prob": 0.828,
+          "market_price": 0.602,
+          "odds": -127,
+          "edge": 0.226,
+          "confidence": 1.0,
+          "recommendation": "BUY"
         }
       ]
     },
@@ -176,111 +297,66 @@
       "host": false,
       "model_1x2": {
         "home": 0.37,
-        "draw": 0.296,
-        "away": 0.334
+        "draw": 0.303,
+        "away": 0.327
       },
-      "model_over2.5": 0.341,
-      "model_over3.5": 0.155,
-      "model_btts": 0.411,
-      "model_home_-1.5": 0.146,
-      "picks": [
+      "markets": [
         {
           "market_type": "1x2",
-          "side": "away",
+          "side": "home",
           "line": null,
-          "model_prob": 0.334,
-          "market_price": 0.228,
-          "edge": 0.106,
-          "confidence": 0.91,
-          "score": 0.096
-        },
-        {
-          "market_type": "total",
-          "side": "under",
-          "line": 2.5,
-          "model_prob": 0.659,
-          "market_price": 0.562,
-          "edge": 0.097,
-          "confidence": 0.6,
-          "score": 0.058
+          "model_prob": 0.37,
+          "market_price": 0.49,
+          "odds": -105,
+          "edge": -0.121,
+          "confidence": 1.0,
+          "recommendation": "PASS"
         },
         {
           "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model_prob": 0.296,
+          "model_prob": 0.303,
           "market_price": 0.282,
-          "edge": 0.014,
+          "odds": 240,
+          "edge": 0.022,
           "confidence": 1.0,
-          "score": 0.014
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "1x2",
+          "side": "away",
+          "line": null,
+          "model_prob": 0.327,
+          "market_price": 0.228,
+          "odds": 320,
+          "edge": 0.099,
+          "confidence": 0.91,
+          "recommendation": "BUY"
+        },
+        {
+          "market_type": "total",
+          "side": "over",
+          "line": 2.5,
+          "model_prob": 0.384,
+          "market_price": 0.438,
+          "odds": 120,
+          "edge": -0.054,
+          "confidence": 0.6,
+          "recommendation": "PASS"
+        },
+        {
+          "market_type": "total",
+          "side": "under",
+          "line": 2.5,
+          "model_prob": 0.616,
+          "market_price": 0.562,
+          "odds": -140,
+          "edge": 0.054,
+          "confidence": 0.6,
+          "recommendation": "BUY"
         }
       ]
-    }
-  ],
-  "top_picks_overall": [
-    {
-      "game": "USA v Australia",
-      "market_type": "handicap",
-      "side": "away",
-      "line": -1.5,
-      "edge": 0.231,
-      "score": 0.231
-    },
-    {
-      "game": "USA v Australia",
-      "market_type": "1x2",
-      "side": "away",
-      "line": null,
-      "edge": 0.172,
-      "score": 0.129
-    },
-    {
-      "game": "Scotland v Morocco",
-      "market_type": "total",
-      "side": "under",
-      "line": 2.5,
-      "edge": 0.188,
-      "score": 0.113
-    },
-    {
-      "game": "Turkey v Paraguay",
-      "market_type": "1x2",
-      "side": "away",
-      "line": null,
-      "edge": 0.106,
-      "score": 0.096
-    },
-    {
-      "game": "Brazil v Haiti",
-      "market_type": "total",
-      "side": "under",
-      "line": 3.5,
-      "edge": 0.131,
-      "score": 0.079
-    },
-    {
-      "game": "Scotland v Morocco",
-      "market_type": "btts",
-      "side": "no",
-      "line": null,
-      "edge": 0.126,
-      "score": 0.076
-    },
-    {
-      "game": "Turkey v Paraguay",
-      "market_type": "total",
-      "side": "under",
-      "line": 2.5,
-      "edge": 0.097,
-      "score": 0.058
-    },
-    {
-      "game": "Scotland v Morocco",
-      "market_type": "1x2",
-      "side": "draw",
-      "line": null,
-      "edge": 0.05,
-      "score": 0.05
     }
   ]
 }
