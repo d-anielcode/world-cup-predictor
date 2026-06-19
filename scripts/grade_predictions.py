@@ -49,7 +49,9 @@ def _grade_pick(pick: dict, hg: int, ag: int) -> str | None:
 def grade(path: Path) -> None:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     matchday = data["matchday"]
-    matches = {(m.home_team, m.away_team): m
+    # Key on (date, home, away) — matching on the team pair alone would grab a
+    # historical fixture with the same matchup (e.g. Brazil 7-1 Haiti, 2016 Copa).
+    matches = {(m.match_date.isoformat(), m.home_team, m.away_team): m
                for m in Database(config.DB_PATH).all_matches()
                if m.played and m.home_goals is not None}
 
@@ -58,7 +60,7 @@ def grade(path: Path) -> None:
     outcomes: list[int] = []
     print(f"=== Grading {matchday} ===\n")
     for g in data["games"]:
-        m = matches.get((g["home"], g["away"]))
+        m = matches.get((matchday, g["home"], g["away"]))
         if m is None or m.home_goals is None:
             print(f"{g['home']} v {g['away']}: result not available yet — skipping")
             continue
