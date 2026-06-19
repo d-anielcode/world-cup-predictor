@@ -58,6 +58,14 @@ def fit_ratings(
     ag = np.array([m.away_goals for m in played], dtype=int)
     w = np.array([_decay_weight(m.match_date, as_of, half_life_days) for m in played])
     wsum = float(w.sum()) if len(played) else 1.0
+    # Per-team effective (decay-weighted) match count. The Elo ridge is scaled by
+    # THIS, not the global wsum, so the prior acts as `prior_weight` pseudo-matches
+    # per team — a team with lots of games is driven by its data, not crushed toward
+    # the prior just because the overall dataset is large.
+    team_w = np.zeros(len(prior))
+    if len(played):
+        np.add.at(team_w, hi, w)
+        np.add.at(team_w, ai, w)
 
     # Boolean masks for the four Dixon-Coles low-score corrections (vectorized).
     m00 = (hg == 0) & (ag == 0)
@@ -88,7 +96,7 @@ def fit_ratings(
         tau_vals = np.clip(tau_vals, 1e-9, None)
         ll = ll + np.log(tau_vals)
         weighted = np.sum(w * ll)
-        ridge = prior_weight * wsum * np.sum((attack - prior) ** 2 + (defense - prior) ** 2)
+        ridge = prior_weight * np.sum(team_w * ((attack - prior) ** 2 + (defense - prior) ** 2))
         center = _CENTER_PENALTY * wsum * (attack.mean() ** 2 + defense.mean() ** 2)
         return -weighted + ridge + center
 
