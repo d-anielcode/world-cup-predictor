@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import json as _json
 import re
 from collections import Counter
 from datetime import date
 
 from touchline import config
 from touchline.data import openfootball, worldcupjson, intl_results
+from touchline.data.kalshi_read import KalshiReadClient
 from touchline.data.elo import EloTable, load_elo
 from touchline.edge.context import build_context
 from touchline.edge.edge import compute_edge
@@ -101,6 +103,10 @@ def main(argv: list[str] | None = None) -> int:
     price_p = sub.add_parser("price", help="Compute edges vs a quotes CSV and write a report")
     price_p.add_argument("--quotes", required=True, help="Path to a market quotes CSV")
     price_p.add_argument("--top", type=int, default=None)
+    disc_p = sub.add_parser("kalshi-discover",
+                            help="Dump live Kalshi World Cup markets to confirm the schema")
+    disc_p.add_argument("--series", default="KXMENWORLDCUP",
+                        help="Comma-separated Kalshi series tickers to dump")
     bt_p = sub.add_parser("backtest", help="Score the model on completed matches")
     bt_p.add_argument("--eval-start", default="2018-01-01",
                       help="Only score matches on/after this ISO date")
@@ -161,6 +167,27 @@ def main(argv: list[str] | None = None) -> int:
         (out_dir / "report.md").write_text(md, encoding="utf-8")
         (out_dir / "report.json").write_text(js, encoding="utf-8")
         print(f"Wrote {len(picks)} ranked picks to {out_dir / 'report.md'}.")
+        return 0
+
+    if args.command == "kalshi-discover":
+        client = KalshiReadClient()
+        try:
+            all_markets = []
+            for series in args.series.split(","):
+                series = series.strip()
+                markets = client.get_markets(series)
+                print(f"Series {series}: {len(markets)} markets")
+                all_markets.extend(markets)
+        finally:
+            client.close()
+        out = config.DATA_DIR / "kalshi_discover.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(_json.dumps(all_markets, indent=2), encoding="utf-8")
+        print(f"\nWrote {len(all_markets)} markets to {out}")
+        priced = [m for m in all_markets if m.get("yes_bid_dollars")]
+        for m in priced[:12]:
+            print(f"  {m.get('yes_sub_title'):16s} yes_bid={m.get('yes_bid_dollars')} "
+                  f"yes_ask={m.get('yes_ask_dollars')}  ticker={m.get('ticker')}")
         return 0
 
     if args.command == "backtest":
