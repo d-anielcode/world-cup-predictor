@@ -6,7 +6,7 @@ from collections import Counter
 from datetime import date
 
 from touchline import config
-from touchline.data import openfootball, worldcupjson
+from touchline.data import openfootball, worldcupjson, intl_results
 from touchline.data.elo import EloTable, load_elo
 from touchline.edge.context import build_context
 from touchline.edge.edge import compute_edge
@@ -114,10 +114,11 @@ def main(argv: list[str] | None = None) -> int:
         db = Database(config.DB_PATH)
         db.init_schema()
         historical = _gather_historical()
+        intl = intl_results.gather(config.CACHE_DIR, since_year=2014)
         live = worldcupjson.fetch_matches(config.CACHE_DIR)
-        total = run_ingest(db, historical=historical, live=live)
+        total = run_ingest(db, historical=historical + intl, live=live)
         print(f"Ingested {total} matches "
-              f"({len(historical)} historical, {len(live)} live).")
+              f"({len(historical)} WC, {len(intl)} intl, {len(live)} live).")
         return 0
 
     if args.command == "fit-ratings":
