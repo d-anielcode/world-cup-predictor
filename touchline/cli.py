@@ -186,6 +186,12 @@ def main(argv: list[str] | None = None) -> int:
                   f"(>= {args.eval_start}): Brier={res.brier:.4f}, "
                   f"log_loss={res.log_loss:.4f} "
                   f"(uniform baseline: Brier=0.6667, log_loss=1.0986).")
+            print("  Market calibration (model_avg vs actual; Brier vs base):")
+            for name, ms in res.markets.items():
+                verdict = "beats" if ms.brier < ms.base_brier else "below"
+                print(f"    {name:10s} acc={ms.accuracy:.0%} "
+                      f"calib_gap={ms.calibration_gap:+.3f} "
+                      f"Brier={ms.brier:.4f} (base {ms.base_brier:.4f}) {verdict}")
         return 0
 
     return 1

@@ -59,3 +59,24 @@ def test_elo_prior_dominates_for_team_with_no_games():
                     as_of=date(2026, 6, 1), extra_teams=["Ghost", "NeutralGhost"])
     assert r.attack["Ghost"] > r.attack["Weak"]
     assert r.attack["Ghost"] > r.attack["NeutralGhost"]
+
+
+def test_fit_recovers_goal_level_via_intercept():
+    import numpy as np
+    from datetime import date, timedelta
+    rng = np.random.default_rng(3)
+    teams = ["A", "B", "C"]
+    base = date(2026, 1, 1)
+    matches = []
+    base_rate = 1.8
+    for i in range(400):
+        h, a = rng.choice(teams, size=2, replace=False)
+        matches.append(Match(
+            match_date=base + timedelta(days=i % 120), home_team=str(h),
+            away_team=str(a), home_goals=int(rng.poisson(base_rate)),
+            away_goals=int(rng.poisson(base_rate)), competition="Syn", stage=None,
+            venue=None, played=True, source="t"))
+    r = fit_ratings(matches, EloTable(), half_life_days=400, prior_weight=0.01,
+                    as_of=date(2026, 6, 1))
+    lam, mu = r.expected_goals("A", "B", apply_home_adv=False)
+    assert 3.0 < lam + mu < 4.2

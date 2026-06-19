@@ -87,7 +87,8 @@ class Database:
             )
             conn.executemany(
                 "INSERT INTO model_params (key, value) VALUES (?,?)",
-                [("home_adv", ratings.home_adv), ("rho", ratings.rho)],
+                [("home_adv", ratings.home_adv), ("rho", ratings.rho),
+                 ("intercept", ratings.intercept)],
             )
 
     def load_ratings(self) -> Ratings:
@@ -99,6 +100,7 @@ class Database:
             defense={r["team"]: r["defense"] for r in rows},
             home_adv=float(params.get("home_adv", 0.0)),
             rho=float(params.get("rho", 0.0)),
+            intercept=float(params.get("intercept", 0.0)),
         )
 
     def all_matches(self) -> list[Match]:

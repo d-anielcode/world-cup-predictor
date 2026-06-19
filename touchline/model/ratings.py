@@ -10,6 +10,7 @@ class Ratings:
     defense: dict[str, float] = field(default_factory=dict)
     home_adv: float = 0.0
     rho: float = 0.0
+    intercept: float = 0.0   # log baseline goal rate (fitted; absorbs the overall level)
 
     def expected_goals(
         self, home: str, away: str, apply_home_adv: bool
@@ -20,6 +21,6 @@ class Ratings:
         """
         ah, dh = self.attack.get(home, 0.0), self.defense.get(home, 0.0)
         aa, da = self.attack.get(away, 0.0), self.defense.get(away, 0.0)
-        log_lam = ah - da + (self.home_adv if apply_home_adv else 0.0)
-        log_mu = aa - dh
+        log_lam = self.intercept + ah - da + (self.home_adv if apply_home_adv else 0.0)
+        log_mu = self.intercept + aa - dh
         return math.exp(log_lam), math.exp(log_mu)

@@ -31,3 +31,25 @@ def log_loss(probs: list[tuple[float, float, float]], outcomes: list[int]) -> fl
         p = min(1.0, max(_EPS, triple[o]))
         total += -math.log(p)
     return total / len(probs) if probs else 0.0
+
+
+def binary_brier(preds: list[float], actuals: list[float]) -> float:
+    """Mean squared error of binary probability predictions."""
+    if not preds:
+        return 0.0
+    return sum((p - y) ** 2 for p, y in zip(preds, actuals)) / len(preds)
+
+
+def base_rate_brier(actuals: list[float]) -> float:
+    """Brier of the constant base-rate predictor (the bar a useful model must beat)."""
+    if not actuals:
+        return 0.0
+    base = sum(actuals) / len(actuals)
+    return base * (1 - base)
+
+
+def calibration_gap(preds: list[float], actuals: list[float]) -> float:
+    """mean(prediction) - actual_rate. Near 0 = well calibrated."""
+    if not preds:
+        return 0.0
+    return sum(preds) / len(preds) - sum(actuals) / len(actuals)

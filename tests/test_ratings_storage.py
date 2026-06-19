@@ -37,3 +37,12 @@ def test_save_ratings_replaces_previous(tmp_path):
     loaded = db.load_ratings()
     assert loaded.attack["USA"] == 0.9
     assert abs(loaded.home_adv - 0.3) < 1e-9
+
+
+def test_intercept_roundtrips(tmp_path):
+    db = Database(tmp_path / "t.db")
+    db.init_schema()
+    db.save_ratings(Ratings(attack={"USA": 0.3}, defense={"USA": 0.2},
+                            home_adv=0.27, rho=-0.06, intercept=0.15))
+    loaded = db.load_ratings()
+    assert abs(loaded.intercept - 0.15) < 1e-9

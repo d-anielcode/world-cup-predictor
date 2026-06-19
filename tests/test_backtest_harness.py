@@ -50,3 +50,16 @@ def test_no_eval_matches_returns_zero_count():
     r = backtest(matches, eval_start=date(2099, 1, 1), half_life_days=400,
                  prior_weight=0.05, elo=EloTable())
     assert r.n_matches == 0
+
+
+def test_backtest_reports_per_market_scores():
+    from touchline.backtest.harness import MarketScore
+    matches = _synthetic()
+    r = backtest(matches, eval_start=date(2026, 1, 1), half_life_days=400,
+                 prior_weight=0.05, elo=EloTable())
+    assert set(r.markets) == {"over2.5", "btts", "home_-1.5", "home_win"}
+    for ms in r.markets.values():
+        assert isinstance(ms, MarketScore)
+        assert ms.n == r.n_matches
+        assert 0.0 <= ms.brier <= 1.0
+        assert 0.0 <= ms.accuracy <= 1.0
