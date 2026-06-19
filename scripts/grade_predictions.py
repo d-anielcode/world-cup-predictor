@@ -28,7 +28,7 @@ def _result(hg: int, ag: int) -> str:
 
 def _grade_pick(pick: dict, hg: int, ag: int) -> str | None:
     """Return 'WIN' | 'LOSS' | 'PUSH' for a pick given the final score."""
-    mt, side, line = pick["market"], pick["side"], pick["line"]
+    mt, side, line = pick["market_type"], pick["side"], pick["line"]
     total, margin = hg + ag, hg - ag
     if mt == "1x2":
         return "WIN" if _result(hg, ag) == side else "LOSS"
@@ -70,8 +70,8 @@ def grade(path: Path) -> None:
         for pk in g["picks"]:
             res = _grade_pick(pk, hg, ag)
             ln = "" if pk["line"] is None else f" {pk['line']}"
-            mark = {"WIN": "✓", "LOSS": "✗", "PUSH": "—"}.get(res, "?")
-            print(f"    {mark} {pk['market']}:{pk['side']}{ln}  "
+            mark = {"WIN": "[WIN] ", "LOSS": "[LOSS]", "PUSH": "[PUSH]"}.get(res, "[????]")
+            print(f"    {mark} {pk['market_type']}:{pk['side']}{ln}  "
                   f"(edge {pk['edge']*100:+.1f}%, conf {pk['confidence']})  -> {res}")
             wins += res == "WIN"; losses += res == "LOSS"; pushes += res == "PUSH"
         print()

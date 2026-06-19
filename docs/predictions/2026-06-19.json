@@ -1,5 +1,6 @@
 {
   "matchday": "2026-06-19",
+  "note": "pre-game model predictions + market lines (vig-removed) for grading",
   "games": [
     {
       "home": "Scotland",
@@ -16,43 +17,46 @@
       "model_home_-1.5": 0.046,
       "picks": [
         {
-          "market": 0.569,
+          "market_type": "total",
           "side": "under",
           "line": 2.5,
-          "model": 0.756,
+          "model_prob": 0.756,
+          "market_price": 0.569,
           "edge": 0.188,
           "confidence": 0.6,
           "score": 0.113
         },
         {
-          "market": 0.58,
+          "market_type": "btts",
           "side": "no",
           "line": null,
-          "model": 0.706,
+          "model_prob": 0.706,
+          "market_price": 0.58,
           "edge": 0.126,
           "confidence": 0.6,
           "score": 0.076
         },
         {
-          "market": 0.265,
+          "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model": 0.316,
+          "model_prob": 0.316,
+          "market_price": 0.265,
           "edge": 0.05,
           "confidence": 1.0,
           "score": 0.05
         },
         {
-          "market": 0.176,
+          "market_type": "1x2",
           "side": "home",
           "line": null,
-          "model": 0.192,
+          "model_prob": 0.192,
+          "market_price": 0.176,
           "edge": 0.015,
           "confidence": 0.71,
           "score": 0.011
         }
-      ],
-      "actual": null
+      ]
     },
     {
       "home": "Brazil",
@@ -69,34 +73,36 @@
       "model_home_-1.5": 0.522,
       "picks": [
         {
-          "market": 0.509,
+          "market_type": "total",
           "side": "under",
           "line": 3.5,
-          "model": 0.64,
+          "model_prob": 0.64,
+          "market_price": 0.509,
           "edge": 0.131,
           "confidence": 0.6,
           "score": 0.079
         },
         {
-          "market": 0.091,
+          "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model": 0.156,
+          "model_prob": 0.156,
+          "market_price": 0.091,
           "edge": 0.066,
           "confidence": 0.36,
           "score": 0.024
         },
         {
-          "market": 0.045,
+          "market_type": "1x2",
           "side": "away",
           "line": null,
-          "model": 0.089,
+          "model_prob": 0.089,
+          "market_price": 0.045,
           "edge": 0.043,
           "confidence": 0.3,
           "score": 0.013
         }
-      ],
-      "actual": null
+      ]
     },
     {
       "home": "USA",
@@ -113,52 +119,56 @@
       "model_home_-1.5": 0.168,
       "picks": [
         {
-          "market": 0.602,
+          "market_type": "handicap",
           "side": "away",
           "line": -1.5,
-          "model": 0.832,
+          "model_prob": 0.832,
+          "market_price": 0.602,
           "edge": 0.231,
           "confidence": 1.0,
           "score": 0.231
         },
         {
-          "market": 0.187,
+          "market_type": "1x2",
           "side": "away",
           "line": null,
-          "model": 0.359,
+          "model_prob": 0.359,
+          "market_price": 0.187,
           "edge": 0.172,
           "confidence": 0.75,
           "score": 0.129
         },
         {
-          "market": 0.217,
+          "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model": 0.261,
+          "model_prob": 0.261,
+          "market_price": 0.217,
           "edge": 0.044,
           "confidence": 0.87,
           "score": 0.038
         },
         {
-          "market": 0.491,
+          "market_type": "btts",
           "side": "yes",
           "line": null,
-          "model": 0.516,
+          "model_prob": 0.516,
+          "market_price": 0.491,
           "edge": 0.025,
           "confidence": 0.6,
           "score": 0.015
         },
         {
-          "market": 0.517,
+          "market_type": "total",
           "side": "under",
           "line": 2.5,
-          "model": 0.531,
+          "model_prob": 0.531,
+          "market_price": 0.517,
           "edge": 0.014,
           "confidence": 0.6,
           "score": 0.008
         }
-      ],
-      "actual": null
+      ]
     },
     {
       "home": "Turkey",
@@ -175,40 +185,42 @@
       "model_home_-1.5": 0.146,
       "picks": [
         {
-          "market": 0.228,
+          "market_type": "1x2",
           "side": "away",
           "line": null,
-          "model": 0.334,
+          "model_prob": 0.334,
+          "market_price": 0.228,
           "edge": 0.106,
           "confidence": 0.91,
           "score": 0.096
         },
         {
-          "market": 0.562,
+          "market_type": "total",
           "side": "under",
           "line": 2.5,
-          "model": 0.659,
+          "model_prob": 0.659,
+          "market_price": 0.562,
           "edge": 0.097,
           "confidence": 0.6,
           "score": 0.058
         },
         {
-          "market": 0.282,
+          "market_type": "1x2",
           "side": "draw",
           "line": null,
-          "model": 0.296,
+          "model_prob": 0.296,
+          "market_price": 0.282,
           "edge": 0.014,
           "confidence": 1.0,
           "score": 0.014
         }
-      ],
-      "actual": null
+      ]
     }
   ],
   "top_picks_overall": [
     {
       "game": "USA v Australia",
-      "market": "handicap",
+      "market_type": "handicap",
       "side": "away",
       "line": -1.5,
       "edge": 0.231,
@@ -216,7 +228,7 @@
     },
     {
       "game": "USA v Australia",
-      "market": "1x2",
+      "market_type": "1x2",
       "side": "away",
       "line": null,
       "edge": 0.172,
@@ -224,7 +236,7 @@
     },
     {
       "game": "Scotland v Morocco",
-      "market": "total",
+      "market_type": "total",
       "side": "under",
       "line": 2.5,
       "edge": 0.188,
@@ -232,7 +244,7 @@
     },
     {
       "game": "Turkey v Paraguay",
-      "market": "1x2",
+      "market_type": "1x2",
       "side": "away",
       "line": null,
       "edge": 0.106,
@@ -240,7 +252,7 @@
     },
     {
       "game": "Brazil v Haiti",
-      "market": "total",
+      "market_type": "total",
       "side": "under",
       "line": 3.5,
       "edge": 0.131,
@@ -248,7 +260,7 @@
     },
     {
       "game": "Scotland v Morocco",
-      "market": "btts",
+      "market_type": "btts",
       "side": "no",
       "line": null,
       "edge": 0.126,
@@ -256,7 +268,7 @@
     },
     {
       "game": "Turkey v Paraguay",
-      "market": "total",
+      "market_type": "total",
       "side": "under",
       "line": 2.5,
       "edge": 0.097,
@@ -264,7 +276,7 @@
     },
     {
       "game": "Scotland v Morocco",
-      "market": "1x2",
+      "market_type": "1x2",
       "side": "draw",
       "line": null,
       "edge": 0.05,
