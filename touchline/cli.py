@@ -82,7 +82,7 @@ def run_price(
                 mp = model_prob(probs, q.market_type, q.side, q.line)
             except (KeyError, ValueError):
                 continue
-            e = compute_edge(mp, q.price, min_games)
+            e = compute_edge(mp, q.price, min_games, market_type=q.market_type)
             edges.append((home, away, q.market_type, q.side, q.line, e))
     picks = rank_picks(edges, top_n=top_n)
     return picks, render_markdown(picks, as_of), render_json(picks, as_of)
