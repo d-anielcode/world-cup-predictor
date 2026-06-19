@@ -25,3 +25,16 @@ def test_log_loss_uniform_is_ln3():
 def test_log_loss_clips_zero_probability():
     ll = log_loss([(1.0, 0.0, 0.0)], [2])
     assert ll > 0 and math.isfinite(ll)
+
+
+def test_binary_brier_and_base():
+    from touchline.backtest.scoring import binary_brier, base_rate_brier
+    preds = [0.6, 0.6, 0.6, 0.6]
+    actuals = [1.0, 1.0, 0.0, 0.0]
+    assert abs(binary_brier(preds, actuals) - 0.26) < 1e-9
+    assert abs(base_rate_brier(actuals) - 0.25) < 1e-9
+
+
+def test_calibration_gap_sign():
+    from touchline.backtest.scoring import calibration_gap
+    assert abs(calibration_gap([0.6, 0.6], [0.0, 1.0]) - 0.1) < 1e-9
