@@ -29,3 +29,22 @@ def test_thin_sample_lowers_confidence():
     deep = compute_edge(model_prob=0.60, market_price=0.50, min_games=50)
     thin = compute_edge(model_prob=0.60, market_price=0.50, min_games=2)
     assert thin.confidence < deep.confidence
+
+
+def test_market_trust_downweights_weak_markets():
+    # Same edge magnitude + sample, but totals/BTTS are weakly-discriminating per the
+    # backtest, so their confidence must be below spreads/1X2.
+    strong = compute_edge(0.60, 0.50, min_games=50, market_type="handicap")
+    one_x2 = compute_edge(0.60, 0.50, min_games=50, market_type="1x2")
+    total = compute_edge(0.60, 0.50, min_games=50, market_type="total")
+    btts = compute_edge(0.60, 0.50, min_games=50, market_type="btts")
+    assert one_x2.confidence == strong.confidence          # both fully trusted
+    assert total.confidence < one_x2.confidence            # totals down-weighted
+    assert btts.confidence < one_x2.confidence
+
+
+def test_market_type_defaults_to_full_trust():
+    # Back-compat: omitting market_type behaves like a fully-trusted market.
+    default = compute_edge(0.60, 0.50, min_games=50)
+    one_x2 = compute_edge(0.60, 0.50, min_games=50, market_type="1x2")
+    assert default.confidence == one_x2.confidence
