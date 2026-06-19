@@ -1,14 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 from touchline.data.elo import EloTable
 from touchline.models import Match
 from touchline.model.fit import fit_ratings
 from touchline.model.dixon_coles import scoreline_matrix
-from touchline.model.pricing import prob_1x2
-from touchline.backtest.scoring import brier_score, log_loss, outcome_index
+from touchline.model.pricing import price_matrix
+from touchline.backtest.scoring import (
+    brier_score, log_loss, outcome_index, binary_brier, base_rate_brier, calibration_gap,
+)
+
+
+@dataclass
+class MarketScore:
+    n: int
+    brier: float
+    base_brier: float
+    calibration_gap: float
+    accuracy: float
 
 
 @dataclass
@@ -16,6 +27,7 @@ class BacktestResult:
     n_matches: int
     brier: float
     log_loss: float
+    markets: dict[str, MarketScore] = field(default_factory=dict)
 
 
 def backtest(
@@ -35,6 +47,9 @@ def backtest(
     fits: dict[date, object] = {}
     probs: list[tuple[float, float, float]] = []
     outcomes: list[int] = []
+    bins: dict[str, tuple[list[float], list[float]]] = {
+        "over2.5": ([], []), "btts": ([], []), "home_-1.5": ([], []), "home_win": ([], []),
+    }
     for m in played:
         if m.match_date < eval_start:
             continue
@@ -51,11 +66,30 @@ def backtest(
             continue
         lam, mu = ratings.expected_goals(m.home_team, m.away_team, apply_home_adv=True)
         matrix = scoreline_matrix(lam, mu, ratings.rho)
-        home, draw, away = prob_1x2(matrix)
-        probs.append((home, draw, away))
+        p = price_matrix(matrix, total_lines=[2.5], handicap_lines=[-1.5])
+        probs.append((p.home, p.draw, p.away))
         outcomes.append(outcome_index(m.home_goals, m.away_goals))
+        bins["over2.5"][0].append(p.over[2.5])
+        bins["over2.5"][1].append(1.0 if m.home_goals + m.away_goals > 2.5 else 0.0)
+        bins["btts"][0].append(p.btts_yes)
+        bins["btts"][1].append(1.0 if m.home_goals >= 1 and m.away_goals >= 1 else 0.0)
+        bins["home_-1.5"][0].append(p.home_handicap[-1.5])
+        bins["home_-1.5"][1].append(1.0 if m.home_goals - m.away_goals > 1.5 else 0.0)
+        bins["home_win"][0].append(p.home)
+        bins["home_win"][1].append(1.0 if m.home_goals > m.away_goals else 0.0)
+
+    markets: dict[str, MarketScore] = {}
+    for name, (preds, acts) in bins.items():
+        acc = (sum((pr > 0.5) == bool(y) for pr, y in zip(preds, acts)) / len(preds)
+               if preds else 0.0)
+        markets[name] = MarketScore(
+            n=len(preds), brier=binary_brier(preds, acts),
+            base_brier=base_rate_brier(acts), calibration_gap=calibration_gap(preds, acts),
+            accuracy=acc,
+        )
     return BacktestResult(
         n_matches=len(probs),
         brier=brier_score(probs, outcomes),
         log_loss=log_loss(probs, outcomes),
+        markets=markets,
     )
