@@ -142,3 +142,29 @@ def test_find_cup_files_filters_to_cup_txt(tmp_path):
     (tmp_path / "2022--qatar" / "cup_stadiums.csv").write_text("x", encoding="utf-8")
     files = find_cup_files(tmp_path)
     assert {f.name for f in files} == {"cup.txt", "cup_finals.txt"}
+
+
+def test_parses_2026_full_month_played_and_upcoming():
+    # 2026 format: full month name on the date line, time+UTC prefix, played
+    # results as "Home N-N (HT) Away" and upcoming fixtures as "Home v Away".
+    text = """= World Cup 2026
+
+▪ Group D
+Fri June 12
+  18:00 UTC-7    USA  4-1 (3-0)  Paraguay    @ Los Angeles (Inglewood)
+Fri June 19
+  12:00 UTC-7    USA      v Australia   @ Seattle
+"""
+    matches = parse_cup_txt(text, competition="World Cup 2026")
+    assert len(matches) == 2
+    played = matches[0]
+    assert played.match_date == date(2026, 6, 12)
+    assert played.home_team == "USA" and played.away_team == "Paraguay"
+    assert (played.home_goals, played.away_goals) == (4, 1)
+    assert played.played is True
+    upcoming = matches[1]
+    assert upcoming.match_date == date(2026, 6, 19)
+    assert upcoming.home_team == "USA" and upcoming.away_team == "Australia"
+    assert upcoming.played is False
+    assert upcoming.home_goals is None
+    assert upcoming.venue == "Seattle"

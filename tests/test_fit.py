@@ -80,3 +80,30 @@ def test_fit_recovers_goal_level_via_intercept():
                     as_of=date(2026, 6, 1))
     lam, mu = r.expected_goals("A", "B", apply_home_adv=False)
     assert 3.0 < lam + mu < 4.2
+
+
+def test_team_rating_not_crushed_by_unrelated_dataset_size():
+    # A team's rating must depend on ITS games, not the global dataset size.
+    # The old global-wsum ridge over-shrinks every team toward the prior as
+    # unrelated matches inflate wsum; the per-team ridge keeps it stable.
+    import math
+    from datetime import date, timedelta
+
+    def make(padding_pairs):
+        base = date(2026, 1, 1)
+        ms = []
+        for i in range(30):                       # Strong hammers Weak 4-0
+            ms.append(Match(match_date=base + timedelta(days=i), home_team="Strong",
+                            away_team="Weak", home_goals=4, away_goals=0,
+                            competition="x", stage=None, venue=None, played=True, source="t"))
+        for i in range(padding_pairs):            # unrelated teams, all 1-1 draws
+            ms.append(Match(match_date=base + timedelta(days=i), home_team=f"P{i % 40}",
+                            away_team=f"Q{i % 40}", home_goals=1, away_goals=1,
+                            competition="x", stage=None, venue=None, played=True, source="t"))
+        return ms
+
+    # Long half-life so the padding fully inflates the global weight sum.
+    r_big = fit_ratings(make(2000), EloTable(), half_life_days=5000,
+                        prior_weight=0.05, as_of=date(2026, 6, 1))
+    # With an uninformative (empty) prior, Strong must stay clearly above Weak.
+    assert r_big.attack["Strong"] - r_big.attack["Weak"] > 1.0

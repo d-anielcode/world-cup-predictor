@@ -12,8 +12,9 @@ from touchline.models import Match
 
 # "▪ Group A" / "▪ Round of 16". Real headers are never commented with '#'.
 _STAGE_RE = re.compile(r"^\s*▪\s+(?P<stage>(?:Group|Round|Quarter|Semi|Final|Third)[^|]*?)\s*$")
-# Standalone date line, e.g. "Sun Nov 20" / "Thu Jun 12" (weekday month day, no year).
-_DATE_RE = re.compile(r"^[A-Z][a-z]{2}\s+[A-Z][a-z]{2}\s+\d{1,2}\s*$")
+# Standalone date line, e.g. "Sun Nov 20" / "Thu Jun 12" / "Thu June 11" (full or
+# abbreviated month; weekday month day, no year).
+_DATE_RE = re.compile(r"^[A-Z][a-z]{2}\s+[A-Z][a-z]{2,}\s+\d{1,2}\s*$")
 # Leading inline date on a match line, e.g. "Fri Jun 11 16:00  ..." (pre-2014).
 _INLINE_DATE_RE = re.compile(
     r"^[A-Z][a-z]{2}\s+(?P<mon>[A-Z][a-z]{2})\s+(?P<day>\d{1,2})\b"
@@ -99,16 +100,24 @@ def parse_cup_txt(text: str, competition: str) -> list[Match]:
             rest = line.strip()[inline.end():]
         rest = _TIME_RE.sub("", rest)
 
-        if match_date is None or "-" not in rest:
+        if match_date is None:
             continue
         venue = None
         if " @ " in rest:
             rest, venue = rest.split(" @ ", 1)
             venue = venue.strip() or None
         parsed = _split_teams(rest)
-        if parsed is None:
+        if parsed is not None:
+            home, away, hg, ag = parsed
+            played, hg, ag = True, hg, ag
+        elif " v " in rest:
+            # Upcoming fixture: "Home v Away" with no score (live/future schedule).
+            home, away = (s.strip() for s in rest.split(" v ", 1))
+            if not home or not away:
+                continue
+            played, hg, ag = False, None, None
+        else:
             continue
-        home, away, hg, ag = parsed
         matches.append(
             Match(
                 match_date=match_date,
@@ -119,7 +128,7 @@ def parse_cup_txt(text: str, competition: str) -> list[Match]:
                 competition=competition,
                 stage=stage,
                 venue=venue,
-                played=True,
+                played=played,
                 source="openfootball",
             )
         )
