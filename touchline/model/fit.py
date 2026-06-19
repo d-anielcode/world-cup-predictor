@@ -81,13 +81,19 @@ def fit_ratings(
         intercept = p[2 * n + 2]
         return attack, defense, home_adv, rho, intercept
 
-    def neg_log_lik(p):
+    def objective(p):
+        """Negative penalized log-likelihood and its analytic gradient.
+
+        An analytic gradient is essential: with ~2N+3 parameters, finite-difference
+        gradients cost ~2N+3 evaluations per step and never converge on large
+        international datasets."""
         attack, defense, home_adv, rho, intercept = unpack(p)
         log_lam = intercept + attack[hi] - defense[ai] + home_adv
         log_mu = intercept + attack[ai] - defense[hi]
         lam = np.exp(log_lam)
         mu = np.exp(log_mu)
         ll = hg * log_lam - lam + ag * log_mu - mu  # Poisson (drop constant log k!)
+
         tau_vals = np.ones(len(played))
         tau_vals[m00] = 1.0 - lam[m00] * mu[m00] * rho
         tau_vals[m01] = 1.0 + lam[m01] * rho
@@ -98,14 +104,40 @@ def fit_ratings(
         weighted = np.sum(w * ll)
         ridge = prior_weight * np.sum(team_w * ((attack - prior) ** 2 + (defense - prior) ** 2))
         center = _CENTER_PENALTY * wsum * (attack.mean() ** 2 + defense.mean() ** 2)
-        return -weighted + ridge + center
+        value = -weighted + ridge + center
+
+        # d(tau)/d(lam,mu,rho) on the four low-score cells; 0 elsewhere.
+        dt_dlam = np.zeros(len(played)); dt_dmu = np.zeros(len(played)); dt_drho = np.zeros(len(played))
+        dt_dlam[m00] = -mu[m00] * rho; dt_dmu[m00] = -lam[m00] * rho; dt_drho[m00] = -lam[m00] * mu[m00]
+        dt_dlam[m01] = rho; dt_drho[m01] = lam[m01]
+        dt_dmu[m10] = rho; dt_drho[m10] = mu[m10]
+        dt_drho[m11] = -1.0
+        # d(ll)/d(log_lam) and d(ll)/d(log_mu); chain rule via d(lam)/d(log_lam)=lam.
+        glam = (hg - lam) + (dt_dlam / tau_vals) * lam
+        gmu = (ag - mu) + (dt_dmu / tau_vals) * mu
+        grho = dt_drho / tau_vals
+
+        grad_a = np.zeros(n); grad_d = np.zeros(n)
+        np.add.at(grad_a, hi, -w * glam)   # attack appears in log_lam for home side
+        np.add.at(grad_a, ai, -w * gmu)    # ...and in log_mu for away side
+        np.add.at(grad_d, ai, w * glam)    # defense enters as -defense (sign flip)
+        np.add.at(grad_d, hi, w * gmu)
+        grad_a += prior_weight * team_w * 2 * (attack - prior)
+        grad_d += prior_weight * team_w * 2 * (defense - prior)
+        grad_a += _CENTER_PENALTY * wsum * 2 * attack.mean() / n
+        grad_d += _CENTER_PENALTY * wsum * 2 * defense.mean() / n
+        grad_H = -np.sum(w * glam)
+        grad_rho = -np.sum(w * grho)
+        grad_c = -np.sum(w * (glam + gmu))
+        grad = np.concatenate([grad_a, grad_d, [grad_H], [grad_rho], [grad_c]])
+        return value, grad
 
     mean_goals = float((hg.mean() + ag.mean()) / 2) if len(played) else 1.3
     intercept0 = math.log(max(mean_goals, 0.1))
     x0 = np.concatenate([prior, prior, [0.25], [-0.05], [intercept0]])
     bounds = ([(None, None)] * (2 * n + 1) + [(-_RHO_BOUND, _RHO_BOUND)]
               + [(None, None)])
-    res = minimize(neg_log_lik, x0, method="L-BFGS-B", bounds=bounds)
+    res = minimize(objective, x0, method="L-BFGS-B", jac=True, bounds=bounds)
     if not res.success:
         warnings.warn(f"fit_ratings: optimizer did not converge: {res.message}")
     attack, defense, home_adv, rho, intercept = unpack(res.x)
