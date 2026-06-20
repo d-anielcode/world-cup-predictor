@@ -1,0 +1,90 @@
+[
+  {
+    "ticker": "KXWCGAME-26JUN19BRAHTI-TIE",
+    "event_ticker": "KXWCGAME-26JUN19BRAHTI",
+    "title": "Brazil vs Haiti Winner?",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "yes_bid_dollars": "0.0400",
+    "yes_ask_dollars": "0.0500",
+    "status": "active",
+    "strike_type": "structured"
+  },
+  {
+    "ticker": "KXWCGAME-26JUN19BRAHTI-HTI",
+    "event_ticker": "KXWCGAME-26JUN19BRAHTI",
+    "title": "Brazil vs Haiti Winner?",
+    "yes_sub_title": "Haiti",
+    "no_sub_title": "Haiti",
+    "yes_bid_dollars": "0.0100",
+    "yes_ask_dollars": "0.0200",
+    "status": "active",
+    "strike_type": "structured"
+  },
+  {
+    "ticker": "KXWCGAME-26JUN19BRAHTI-BRA",
+    "event_ticker": "KXWCGAME-26JUN19BRAHTI",
+    "title": "Brazil vs Haiti Winner?",
+    "yes_sub_title": "Brazil",
+    "no_sub_title": "Brazil",
+    "yes_bid_dollars": "0.9400",
+    "yes_ask_dollars": "0.9500",
+    "status": "active",
+    "strike_type": "structured"
+  },
+  {
+    "ticker": "KXWCTOTAL-26JUN19BRAHTI-3",
+    "event_ticker": "KXWCTOTAL-26JUN19BRAHTI",
+    "title": "Will over 2.5 goals be scored?",
+    "yes_sub_title": "Over 2.5 goals scored",
+    "no_sub_title": "Over 2.5 goals scored",
+    "yes_bid_dollars": "0.7100",
+    "yes_ask_dollars": "0.7200",
+    "status": "active",
+    "strike_type": "greater"
+  },
+  {
+    "ticker": "KXWCSPREAD-26JUN19BRAHTI-BRA4",
+    "event_ticker": "KXWCSPREAD-26JUN19BRAHTI",
+    "title": "Brazil wins by more than 3.5 goals?",
+    "yes_sub_title": "Brazil wins by more than 3.5 goals",
+    "no_sub_title": "Brazil wins by more than 3.5 goals",
+    "yes_bid_dollars": "0.3000",
+    "yes_ask_dollars": "0.3100",
+    "status": "active",
+    "strike_type": "greater"
+  },
+  {
+    "ticker": "KXWCSPREAD-26JUN19BRAHTI-HTI2",
+    "event_ticker": "KXWCSPREAD-26JUN19BRAHTI",
+    "title": "Haiti wins by more than 1.5 goals?",
+    "yes_sub_title": "Haiti wins by more than 1.5 goals",
+    "no_sub_title": "Haiti wins by over 1.5 goals",
+    "yes_bid_dollars": "0.0000",
+    "yes_ask_dollars": "0.0100",
+    "status": "active",
+    "strike_type": "greater"
+  },
+  {
+    "ticker": "KXWCSPREAD-26JUN19BRAHTI-BRA2",
+    "event_ticker": "KXWCSPREAD-26JUN19BRAHTI",
+    "title": "Brazil wins by more than 1.5 goals?",
+    "yes_sub_title": "Brazil wins by more than 1.5 goals",
+    "no_sub_title": "Brazil wins by over 1.5 goals",
+    "yes_bid_dollars": "0.8200",
+    "yes_ask_dollars": "0.8300",
+    "status": "active",
+    "strike_type": "greater"
+  },
+  {
+    "ticker": "KXWCBTTS-26JUN19BRAHTI-BTTS",
+    "event_ticker": "KXWCBTTS-26JUN19BRAHTI",
+    "title": "Will both teams score?",
+    "yes_sub_title": "Both Teams To Score",
+    "no_sub_title": "Both Teams To Score",
+    "yes_bid_dollars": "0.2700",
+    "yes_ask_dollars": "0.2900",
+    "status": "active",
+    "strike_type": null
+  }
+]

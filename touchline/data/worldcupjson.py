@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+import warnings
 from pathlib import Path
 
 import httpx
@@ -68,6 +69,15 @@ def fetch_matches(
             resp.raise_for_status()
             payload = resp.json()
             cache_file.write_text(json.dumps(payload), encoding="utf-8")
+        except (httpx.HTTPError, ValueError) as e:
+            # worldcupjson.net is an optional, sometimes-dead feed (404s observed in
+            # 2026). It must never crash the pipeline — fall back to a stale cache if
+            # present, else return no live matches (openfootball is the primary source).
+            warnings.warn(f"worldcupjson fetch failed ({e!r}); skipping live feed")
+            if cache_file.is_file():
+                payload = json.loads(cache_file.read_text(encoding="utf-8"))
+            else:
+                return []
         finally:
             if owns:
                 client.close()
