@@ -84,6 +84,17 @@ class KalshiReadClient:
     def get_market(self, ticker: str) -> dict:
         return self._get(f"/markets/{ticker}").get("market", {})
 
+    def get_candlesticks(
+        self, series_ticker: str, ticker: str, start_ts: int, end_ts: int,
+        period_interval: int = 60,
+    ) -> list[dict]:
+        """Historical OHLC candlesticks for a market (read-only). Each candle has
+        end_period_ts plus yes_bid/yes_ask {open,high,low,close}_dollars. Used to
+        recover a settled market's pre-kickoff price for the vs-market backtest."""
+        path = (f"/series/{series_ticker}/markets/{ticker}/candlesticks"
+                f"?start_ts={start_ts}&end_ts={end_ts}&period_interval={period_interval}")
+        return self._get(path).get("candlesticks", [])
+
     def get_markets(self, series_ticker: str, status: str = "open", limit: int = 100) -> list[dict]:
         """Page through all markets for a series; returns raw market dicts."""
         markets: list[dict] = []
