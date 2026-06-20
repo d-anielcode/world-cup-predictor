@@ -72,12 +72,11 @@ def run_price(
         totals, handicaps = fixture_lines(quotes, home, away)
         ctx = build_context(home, away, when, venue, history)
         lam_mult, mu_mult = fixture_multipliers(home, away, overlay)
-        # Apply the learned home advantage only when the nominal home team is the
-        # venue's host nation. ASSUMPTION: a host listed as the *away* team would
-        # miss its home edge here (price_fixture only boosts the home side). No
-        # current 2026 fixture triggers this; Plan 4 must handle host-as-away when
-        # the real venue-assigned schedule lands.
-        apply_home_adv = ctx.home_altitude_acclimatized
+        # Apply the rating's learned home advantage only when the nominal home team
+        # is the venue's host nation. A host listed as the *away* team still gets its
+        # host edge via the host factor (ctx.away_is_host), but not this home_adv term
+        # (price_fixture's home_adv only lifts the home side).
+        apply_home_adv = ctx.home_is_host
         probs = price_fixture(
             ratings, home, away, apply_home_adv=apply_home_adv, ctx=ctx,
             total_lines=totals or None, handicap_lines=handicaps or None,

@@ -27,6 +27,15 @@ def test_home_advantage_flag_raises_home_prob():
     assert with_adv.home > neutral.home
 
 
+def test_host_boost_raises_host_win_prob():
+    r = _ratings()
+    host = price_fixture(r, "USA", "Wales", apply_home_adv=True,
+                         ctx=FactorContext(home_is_host=True))
+    plain_home = price_fixture(r, "USA", "Wales", apply_home_adv=True,
+                               ctx=FactorContext())
+    assert host.home > plain_home.home
+
+
 def test_heat_lowers_over_probability():
     r = _ratings()
     mild = price_fixture(r, "USA", "Wales", apply_home_adv=False, ctx=FactorContext())

@@ -43,13 +43,17 @@ def build_context(
         return FactorContext(wbgt_c=wbgt_c)
     travel_h, rest_h = _travel_and_rest(home, when, venue, history)
     travel_a, rest_a = _travel_and_rest(away, when, venue, history)
+    home_host = is_host_country(home) and venue.country == home
+    away_host = is_host_country(away) and venue.country == away
     return FactorContext(
         travel_km_home=travel_h,
         travel_km_away=travel_a,
         altitude_m=venue.altitude_m,
-        home_altitude_acclimatized=is_host_country(home) and venue.country == home,
-        away_altitude_acclimatized=is_host_country(away) and venue.country == away,
+        home_altitude_acclimatized=home_host,
+        away_altitude_acclimatized=away_host,
         wbgt_c=wbgt_c,
         rest_days_home=rest_h,
         rest_days_away=rest_a,
+        home_is_host=home_host,
+        away_is_host=away_host,
     )
