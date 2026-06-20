@@ -29,6 +29,12 @@ _ALIASES: dict[str, str] = {
     "czech republic": "Czech Republic",
     "bosnia and herzegovina": "Bosnia-Herzegovina",
     "bosnia-herzegovina": "Bosnia-Herzegovina",
+    # Kalshi spellings that differ from the openfootball/results data:
+    "turkiye": "Turkey",
+    "türkiye": "Turkey",
+    "congo dr": "DR Congo",
+    "dr congo": "DR Congo",
+    "curacao": "Curaçao",
 }
 
 
