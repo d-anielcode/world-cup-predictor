@@ -5,7 +5,20 @@ import re
 from datetime import date
 from pathlib import Path
 
-from touchline.data.kalshi_quotes import GAME_SERIES, parse_game_market, _suffix
+from touchline.data.kalshi_quotes import (
+    GAME_SERIES, parse_game_market, parse_total_market, parse_spread_market,
+    parse_btts_market, _suffix, _GAME_TITLE,
+)
+from touchline.data.teams import canonical_team
+
+# Binary per-match series and their parsers (1X2/GAME is handled separately as the
+# 3-way market and as the source of the per-suffix team names). Correct-score is
+# intentionally excluded: 200+ illiquid cells per match, low value for vs-market.
+_BINARY_PARSERS = {
+    "KXWCTOTAL": parse_total_market,
+    "KXWCSPREAD": parse_spread_market,
+    "KXWCBTTS": parse_btts_market,
+}
 
 _MONTHS = {m: i + 1 for i, m in enumerate(
     ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -50,38 +63,56 @@ def pre_kickoff_price(candles: list[dict], kickoff_ts: int) -> float | None:
     return None
 
 
-def capture_1x2_history(
+def capture_settled_history(
     client, kickoff_lookup: dict, lookback_days: int = 45, period_interval: int = 60,
 ) -> list[dict]:
-    """Recover each settled KXWCGAME (match-winner) contract's pre-kickoff price.
+    """Recover every settled per-match contract's pre-kickoff price + result.
 
-    `kickoff_lookup` maps (date, frozenset({home, away})) -> kickoff datetime (UTC),
-    built from the match DB. For every settled contract we decode the fixture, find
-    its kickoff, pull candlesticks up to kickoff, and take the closing mid. Returns
-    one record per contract: home, away, side, market_price, result, kickoff_ts."""
+    Covers 1X2 (KXWCGAME) plus totals/handicap/BTTS. `kickoff_lookup` maps
+    (date, frozenset({home, away})) -> kickoff datetime (UTC), from the match DB.
+    For each contract we decode the fixture, find its kickoff, pull candlesticks up
+    to kickoff, and take the closing mid. Binary markets need the per-suffix team
+    names, which come from the settled GAME titles. One record per contract."""
+    game_settled = client.get_markets(GAME_SERIES, status="settled")
+    teams_by_suffix: dict[str, tuple[str, str]] = {}
+    for m in game_settled:
+        gm = _GAME_TITLE.match(m.get("title", "") or "")
+        if gm:
+            teams_by_suffix[_suffix(m.get("event_ticker", ""))] = (
+                canonical_team(gm.group("home")), canonical_team(gm.group("away")))
+
     out: list[dict] = []
-    for m in client.get_markets(GAME_SERIES, status="settled"):
-        q = parse_game_market(m)
-        if q is None:
-            continue
-        suffix = _suffix(m.get("event_ticker", ""))
-        d = decode_suffix_date(suffix)
+
+    def emit(series: str, m: dict, q) -> None:
+        d = decode_suffix_date(_suffix(m.get("event_ticker", "")))
         ko = kickoff_lookup.get((d, frozenset((q.home, q.away)))) if d else None
         if ko is None:
-            continue
+            return
         ko_ts = int(ko.timestamp())
         candles = client.get_candlesticks(
-            GAME_SERIES, m["ticker"], ko_ts - lookback_days * 86400, ko_ts,
-            period_interval)
+            series, m["ticker"], ko_ts - lookback_days * 86400, ko_ts, period_interval)
         price = pre_kickoff_price(candles, ko_ts)
         if price is None or price <= 0:
-            continue
+            return
         out.append({
             "date": d.isoformat(), "home": q.home, "away": q.away,
-            "market_type": "1x2", "side": q.side, "line": None,
+            "market_type": q.market_type, "side": q.side, "line": q.line,
             "kickoff_ts": ko_ts, "market_price": price,
             "result": m.get("result"), "ticker": m.get("ticker", ""),
         })
+
+    for m in game_settled:
+        q = parse_game_market(m)
+        if q is not None:
+            emit(GAME_SERIES, m, q)
+    for series, parser in _BINARY_PARSERS.items():
+        for m in client.get_markets(series, status="settled"):
+            teams = teams_by_suffix.get(_suffix(m.get("event_ticker", "")))
+            if teams is None:
+                continue
+            q = parser(m, *teams)
+            if q is not None:
+                emit(series, m, q)
     return out
 
 

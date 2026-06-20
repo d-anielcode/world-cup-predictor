@@ -6,6 +6,34 @@ from touchline.backtest.scoring import brier_score, log_loss
 
 
 @dataclass
+class BinaryComparison:
+    market_type: str
+    n: int
+    model_brier: float
+    market_brier: float
+    model_pnl: float
+    n_bets: int
+
+
+def score_binary_vs_market(market_type: str, records: list[dict]) -> BinaryComparison:
+    """Model vs market on a binary market (totals/handicap/BTTS).
+
+    Each record is {"model": p, "market": price, "outcome": 0/1}. Brier compares the
+    model's probability and the market's price to the realized 0/1; P&L flat-stakes
+    $1 on each positive-edge YES at its price."""
+    n = len(records)
+    mb = sum((r["model"] - r["outcome"]) ** 2 for r in records) / n if n else 0.0
+    kb = sum((r["market"] - r["outcome"]) ** 2 for r in records) / n if n else 0.0
+    pnl, n_bets = 0.0, 0
+    for r in records:
+        if r["model"] > r["market"] and r["market"] > 0:
+            pnl += (1.0 - r["market"]) if r["outcome"] == 1 else -r["market"]
+            n_bets += 1
+    return BinaryComparison(market_type=market_type, n=n, model_brier=mb,
+                            market_brier=kb, model_pnl=round(pnl, 4), n_bets=n_bets)
+
+
+@dataclass
 class MarketComparison:
     n: int
     model_brier: float
