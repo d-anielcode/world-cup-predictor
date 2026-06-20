@@ -2,7 +2,7 @@ from datetime import date
 from touchline.models import Match
 
 
-def test_match_natural_key_is_stable_and_order_independent_fields():
+def test_match_natural_key_ignores_non_identifying_fields():
     m = Match(
         match_date=date(2022, 11, 20),
         home_team="Qatar",
@@ -15,7 +15,17 @@ def test_match_natural_key_is_stable_and_order_independent_fields():
         played=True,
         source="openfootball",
     )
-    assert m.natural_key() == "2022-11-20|Qatar|Ecuador"
+    # Teams are sorted so the key is independent of which feed listed the nominal
+    # home team (feeds disagree on neutral-site orientation -> would double-count).
+    assert m.natural_key() == "2022-11-20|Ecuador|Qatar"
+
+
+def test_match_natural_key_is_home_away_order_independent():
+    a = Match(date(2014, 6, 23), "Cameroon", "Brazil", 1, 4,
+              "World Cup 2014", None, None, True, "openfootball")
+    b = Match(date(2014, 6, 23), "Brazil", "Cameroon", 4, 1,
+              "World Cup 2014", None, None, True, "intl_results")
+    assert a.natural_key() == b.natural_key()
 
 
 def test_unplayed_match_has_none_goals():

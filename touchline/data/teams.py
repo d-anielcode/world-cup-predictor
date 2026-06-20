@@ -6,7 +6,9 @@ from __future__ import annotations
 # same natural_key from both sources and is not double-counted.
 
 def _norm(name: str) -> str:
-    return " ".join(name.strip().lower().split())
+    # Normalize "&" -> "and" so ampersand spellings (openfootball's
+    # "Bosnia & Herzegovina") collapse onto the same alias as the hyphen/word forms.
+    return " ".join(name.replace("&", " and ").strip().lower().split())
 
 
 # variant (normalized) -> canonical display name

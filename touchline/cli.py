@@ -19,7 +19,7 @@ from touchline.edge.rank import rank_picks, RankedPick
 from touchline.model.fit import fit_ratings
 from touchline.model.price_fixture import price_fixture
 from touchline.model.ratings import Ratings
-from touchline.models import Match
+from touchline.models import Match, dedupe_matches
 from touchline.overlay.squad import load_overlay, fixture_multipliers
 from touchline.report.render import render_markdown, render_json
 from touchline.backtest.harness import backtest as run_backtest
@@ -30,8 +30,12 @@ _YEAR_RE = re.compile(r"(\d{4})")
 
 
 def run_ingest(db: Database, historical: list[Match], live: list[Match]) -> int:
-    """Pure orchestration: upsert provided records. Returns total upserted."""
-    all_matches = list(historical) + list(live)
+    """Pure orchestration: de-duplicate then upsert provided records.
+
+    Returns the number of distinct fixtures upserted. De-duplication collapses
+    the same match arriving from multiple feeds (with team spellings or home/away
+    orientation differing) into one row — see `dedupe_matches`."""
+    all_matches = dedupe_matches(list(historical) + list(live))
     return db.upsert_matches(all_matches)
 
 

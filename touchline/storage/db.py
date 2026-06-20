@@ -75,6 +75,14 @@ class Database:
             )
         return len(rows)
 
+    def replace_all_matches(self, matches: list[Match]) -> int:
+        """Wipe the matches table and reinsert. Used to migrate the stored rows
+        onto a new natural-key scheme, where stale old-key rows would otherwise
+        linger because `upsert_matches` only ever inserts/updates."""
+        with self._connect() as conn:
+            conn.execute("DELETE FROM matches")
+        return self.upsert_matches(matches)
+
     def save_ratings(self, ratings: Ratings) -> None:
         with self._connect() as conn:
             conn.execute("DELETE FROM team_ratings")
