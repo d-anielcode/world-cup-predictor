@@ -29,3 +29,23 @@ def test_upsert_is_idempotent_on_natural_key(tmp_path):
     rows = db.all_matches()
     assert len(rows) == 1
     assert (rows[0].home_goals, rows[0].away_goals) == (1, 1)
+
+
+def test_swapped_orientation_shares_natural_key(tmp_path):
+    # Same fixture listed with home/away swapped must occupy one row, not two.
+    db = Database(tmp_path / "t.db")
+    db.init_schema()
+    db.upsert_matches([_match(home="Qatar", away="Ecuador")])
+    db.upsert_matches([_match(home="Ecuador", away="Qatar")])
+    assert len(db.all_matches()) == 1
+
+
+def test_replace_all_matches_clears_stale_rows(tmp_path):
+    db = Database(tmp_path / "t.db")
+    db.init_schema()
+    db.upsert_matches([_match(home="Qatar", away="Ecuador"),
+                       _match(home="Spain", away="Germany")])
+    n = db.replace_all_matches([_match(home="Qatar", away="Ecuador")])
+    rows = db.all_matches()
+    assert n == 1 and len(rows) == 1
+    assert {r.home_team for r in rows} == {"Qatar"}
