@@ -47,3 +47,16 @@ def test_fetch_uses_cache_when_fresh(tmp_path):
     # No client passed; if it tried to hit the network with ttl high it'd fail offline.
     matches = fetch_matches(cache_dir, ttl_seconds=10_000)
     assert len(matches) == 2
+
+
+def test_dead_feed_does_not_crash(tmp_path):
+    # worldcupjson.net 404s in 2026; a dead optional feed must return [] not raise.
+    import httpx
+    from touchline.data.worldcupjson import fetch_matches
+
+    def _raise(*a, **k):
+        raise httpx.ConnectError("boom")
+
+    client = httpx.Client()
+    client.get = _raise  # type: ignore[assignment]
+    assert fetch_matches(tmp_path / "cache", client=client) == []
