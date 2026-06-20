@@ -19,6 +19,7 @@ from touchline.edge.edge import compute_edge
 from touchline.edge.model_lookup import model_prob
 from touchline.edge.quotes import load_quotes, fixture_lines, MarketQuoteRow
 from touchline.edge.rank import rank_picks, RankedPick
+from touchline.edge.staking import size_stakes
 from touchline.model.fit import fit_ratings
 from touchline.model.price_fixture import price_fixture
 from touchline.model.ratings import Ratings
@@ -62,11 +63,13 @@ def run_price(
     team_games: dict[str, int],
     as_of: str,
     top_n: int | None = None,
+    bankroll: float | None = None,
 ) -> tuple[list[RankedPick], str, str]:
-    """Price fixtures, compute edges vs quotes, rank, and render the report.
+    """Price fixtures, compute edges vs quotes, rank, size stakes, and render.
 
     `fixtures` is a list of (home, away, date, venue_name). `team_games` maps team ->
-    played-match count (Elo-prior reliance proxy). Returns (picks, markdown, json)."""
+    played-match count (Elo-prior reliance proxy). `bankroll` (defaults to
+    config.BANKROLL) sizes the recommended stakes. Returns (picks, markdown, json)."""
     edges: list[tuple] = []
     for home, away, when, venue in fixtures:
         fx_quotes = [q for q in quotes if q.home == home and q.away == away]
@@ -94,7 +97,9 @@ def run_price(
             e = compute_edge(mp, q.price, min_games, market_type=q.market_type)
             edges.append((home, away, q.market_type, q.side, q.line, e))
     picks = rank_picks(edges, top_n=top_n)
-    return picks, render_markdown(picks, as_of), render_json(picks, as_of)
+    bank = config.BANKROLL if bankroll is None else bankroll
+    stakes = size_stakes(picks, bank)
+    return picks, render_markdown(picks, as_of, stakes), render_json(picks, as_of, stakes)
 
 
 def run_daily(ratings, overlay, quotes, fixtures, history, team_games, as_of, out_dir):

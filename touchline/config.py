@@ -7,6 +7,9 @@ DATA_DIR = Path(os.environ.get("TOUCHLINE_DATA_DIR", "touchline_data")).resolve(
 DB_PATH = DATA_DIR / "touchline.db"
 CACHE_DIR = DATA_DIR / "cache"
 
+# Bankroll used to size recommended stakes in the edge report (dollars).
+BANKROLL = float(os.environ.get("TOUCHLINE_BANKROLL", "100"))
+
 # Kalshi (read-only). Reused from EdgeRunner env conventions.
 KALSHI_BASE_URL = os.environ.get(
     "KALSHI_BASE_URL", "https://api.elections.kalshi.com/trade-api/v2"
