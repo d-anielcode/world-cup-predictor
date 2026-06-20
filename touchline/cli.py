@@ -9,6 +9,7 @@ from datetime import date
 from touchline import config
 from touchline.data import openfootball, worldcupjson, intl_results
 from touchline.data.kalshi_read import KalshiReadClient
+from touchline.data import kalshi_quotes
 from touchline.data.elo import EloTable, load_elo
 from touchline.edge.context import build_context
 from touchline.edge.edge import compute_edge
@@ -90,6 +91,21 @@ def run_price(
     return picks, render_markdown(picks, as_of), render_json(picks, as_of)
 
 
+def run_daily(ratings, overlay, quotes, fixtures, history, team_games, as_of, out_dir):
+    """Price upcoming fixtures vs quotes and write a dated report.
+
+    Thin wrapper over run_price; returns (markdown_path, json_path)."""
+    from pathlib import Path
+    _, md, js = run_price(ratings, overlay, quotes, fixtures, history, team_games, as_of=as_of)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    md_path = out_dir / f"{as_of}-report.md"
+    json_path = out_dir / f"{as_of}-report.json"
+    md_path.write_text(md, encoding="utf-8")
+    json_path.write_text(js, encoding="utf-8")
+    return md_path, json_path
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="touchline")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -107,6 +123,9 @@ def main(argv: list[str] | None = None) -> int:
                             help="Dump live Kalshi World Cup markets to confirm the schema")
     disc_p.add_argument("--series", default="KXMENWORLDCUP",
                         help="Comma-separated Kalshi series tickers to dump")
+    daily_p = sub.add_parser("daily", help="Full pipeline: ingest, fit, fetch Kalshi, write report")
+    daily_p.add_argument("--skip-refresh", action="store_true",
+                         help="Use the existing DB/ratings instead of re-ingesting and re-fitting")
     bt_p = sub.add_parser("backtest", help="Score the model on completed matches")
     bt_p.add_argument("--eval-start", default="2018-01-01",
                       help="Only score matches on/after this ISO date")
@@ -220,6 +239,32 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"    {name:10s} acc={ms.accuracy:.0%} "
                       f"calib_gap={ms.calibration_gap:+.3f} "
                       f"Brier={ms.brier:.4f} (base {ms.base_brier:.4f}) {verdict}")
+        return 0
+
+    if args.command == "daily":
+        db = Database(config.DB_PATH)
+        db.init_schema()
+        if not args.skip_refresh:
+            historical = _gather_historical()
+            intl = intl_results.gather(config.CACHE_DIR, since_year=2014)
+            live = worldcupjson.fetch_matches(config.CACHE_DIR)
+            run_ingest(db, historical=historical + intl, live=live)
+            elo_path = config.CACHE_DIR / "elo.csv"
+            elo = load_elo(elo_path) if elo_path.is_file() else EloTable()
+            db.save_ratings(fit_ratings(db.all_matches(), elo, half_life_days=900,
+                                        prior_weight=0.05, as_of=date.today()))
+        ratings = db.load_ratings()
+        overlay = load_overlay(config.CACHE_DIR / "squad_adjustments.json")
+        history = db.all_matches()
+        team_games = Counter(t for m in history if m.played for t in (m.home_team, m.away_team))
+        fixtures = [(m.home_team, m.away_team, m.match_date, m.venue)
+                    for m in history if not m.played and m.venue]
+        quotes = kalshi_quotes.fetch_quotes()
+        md_path, _ = run_daily(ratings, overlay, quotes, fixtures, history,
+                               dict(team_games), as_of=date.today().isoformat(),
+                               out_dir=config.DATA_DIR / "reports")
+        print(f"Priced {len(quotes)} Kalshi markets across "
+              f"{len({(q.home, q.away) for q in quotes})} matches -> {md_path}")
         return 0
 
     return 1
