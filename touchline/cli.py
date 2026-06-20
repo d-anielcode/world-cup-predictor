@@ -4,7 +4,7 @@ import argparse
 import json as _json
 import re
 from collections import Counter
-from datetime import date
+from datetime import date, datetime, timezone
 
 from touchline import config
 import httpx
@@ -280,12 +280,14 @@ def main(argv: list[str] | None = None) -> int:
         overlay = load_overlay(config.CACHE_DIR / "squad_adjustments.json")
         history = db.all_matches()
         team_games = Counter(t for m in history if m.played for t in (m.home_team, m.away_team))
-        # Upcoming fixtures with a known venue. LIMITATION: the DB has no kickoff
-        # times, so an in-progress match is still 'unplayed' here and Kalshi may be
-        # quoting live in-play odds for it — the pre-match model isn't calibrated for
-        # in-play state. Run `daily` before the day's matches kick off for clean edges.
+        # Upcoming fixtures with a known venue, excluding games that have already
+        # kicked off: Kalshi quotes live in-play odds once a match starts, and the
+        # pre-match model isn't calibrated for in-play state. Kickoff times come from
+        # openfootball (UTC); a fixture with no known kickoff falls back to included.
+        now = datetime.now(timezone.utc)
         fixtures = [(m.home_team, m.away_team, m.match_date, m.venue)
-                    for m in history if not m.played and m.venue]
+                    for m in history if not m.played and m.venue
+                    and (m.kickoff is None or m.kickoff > now)]
         quotes = kalshi_quotes.fetch_quotes()
         md_path, _ = run_daily(ratings, overlay, quotes, fixtures, history,
                                dict(team_games), as_of=date.today().isoformat(),

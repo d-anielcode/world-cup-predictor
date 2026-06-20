@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import date
+from datetime import date, datetime
 
 # Orientation authority for de-duplication: when two feeds list the same fixture
 # with home/away swapped, we keep the orientation from the highest-priority
@@ -21,6 +21,10 @@ class Match:
     venue: str | None
     played: bool
     source: str
+    # Timezone-aware UTC kickoff, when a feed supplies a time + UTC offset (only
+    # openfootball does, for the current tournament). None otherwise. Used to skip
+    # already-started games in `daily`; not part of the natural key.
+    kickoff: datetime | None = None
 
     def natural_key(self) -> str:
         """Dedup key: date + both teams, order-independent.
@@ -74,11 +78,13 @@ def dedupe_matches(matches: list[Match]) -> list[Match]:
             (t[0].venue for t in items if t[0].venue), None)
         stage = primary.stage or next(
             (t[0].stage for t in items if t[0].stage), None)
+        kickoff = primary.kickoff or next(
+            (t[0].kickoff for t in items if t[0].kickoff), None)
         out.append(replace(
             primary,
             home_team=home_k, away_team=away_k,
             home_goals=home_goals, away_goals=away_goals,
-            stage=stage, venue=venue, played=is_played,
+            stage=stage, venue=venue, played=is_played, kickoff=kickoff,
         ))
     return out
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import subprocess
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from dateutil import parser as dateparser
@@ -20,7 +20,24 @@ _INLINE_DATE_RE = re.compile(
     r"^[A-Z][a-z]{2}\s+(?P<mon>[A-Z][a-z]{2})\s+(?P<day>\d{1,2})\b"
 )
 # Leading kickoff time + optional timezone offset, e.g. "17:00 UTC-3 " / "19:00 ".
-_TIME_RE = re.compile(r"^\s*\d{1,2}:\d{2}(?:\s+UTC[+-]?\d+)?\s+")
+_TIME_RE = re.compile(
+    r"^\s*(?P<h>\d{1,2}):(?P<min>\d{2})(?:\s+UTC(?P<off>[+-]?\d+))?\s+")
+
+
+def _parse_kickoff(rest: str, match_date: date) -> datetime | None:
+    """Build a UTC kickoff datetime from a leading 'HH:MM UTC±N' on the line.
+
+    Returns None when there is no time or no UTC offset (older feeds omit the
+    offset, so an absolute instant can't be resolved)."""
+    m = _TIME_RE.match(rest)
+    if not m or m.group("off") is None:
+        return None
+    local = datetime(
+        match_date.year, match_date.month, match_date.day,
+        int(m.group("h")), int(m.group("min")),
+        tzinfo=timezone(timedelta(hours=int(m.group("off")))),
+    )
+    return local.astimezone(timezone.utc)
 _SCORE_RE = re.compile(r"(?P<hg>\d+)-(?P<ag>\d+)")
 # Junk between the score and the away team in "Home Score [junk] Away" lines:
 # halftime "(0-2)", extra time "a.e.t.", penalties ", 3-2 pen.", stray scores.
@@ -98,6 +115,7 @@ def parse_cup_txt(text: str, competition: str) -> list[Match]:
                 f"{inline.group('mon')} {inline.group('day')} {year}"
             ).date()
             rest = line.strip()[inline.end():]
+        kickoff = _parse_kickoff(rest, match_date) if match_date else None
         rest = _TIME_RE.sub("", rest)
 
         if match_date is None:
@@ -130,6 +148,7 @@ def parse_cup_txt(text: str, competition: str) -> list[Match]:
                 venue=venue,
                 played=played,
                 source="openfootball",
+                kickoff=kickoff,
             )
         )
     return matches
