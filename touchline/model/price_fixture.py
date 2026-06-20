@@ -15,6 +15,7 @@ def price_fixture(
     max_goals: int = 10,
     total_lines: list[float] | None = None,
     handicap_lines: list[float] | None = None,
+    score_lines: list[tuple[int, int]] | None = None,
     lam_mult: float = 1.0,
     mu_mult: float = 1.0,
 ) -> MarketProbs:
@@ -29,4 +30,5 @@ def price_fixture(
     lam, mu = adjust_expected_goals(lam, mu, ctx)
     lam, mu = lam * lam_mult, mu * mu_mult
     matrix = scoreline_matrix(lam, mu, ratings.rho, max_goals=max_goals)
-    return price_matrix(matrix, total_lines=total_lines, handicap_lines=handicap_lines)
+    return price_matrix(matrix, total_lines=total_lines, handicap_lines=handicap_lines,
+                        score_lines=score_lines)

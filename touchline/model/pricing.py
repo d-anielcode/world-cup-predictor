@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -19,6 +19,9 @@ class MarketProbs:
     # goals (P(margin > -line)). See prob_home_handicap. Plan 3 must confirm the
     # Kalshi spread field's sign before mapping these keys to contracts.
     home_handicap: dict[float, float]
+    # (home_goals, away_goals) -> P(exact score). Only the requested scorelines are
+    # filled (Kalshi's correct-score market lists specific cells).
+    correct_score: dict[tuple[int, int], float] = field(default_factory=dict)
 
 
 def _margin_grid(m: np.ndarray) -> np.ndarray:
@@ -57,10 +60,19 @@ def prob_home_handicap(m: np.ndarray, line: float) -> float:
     return float(m[_margin_grid(m) > -line].sum())
 
 
+def prob_correct_score(m: np.ndarray, home_goals: int, away_goals: int) -> float:
+    """P(exact final score home_goals-away_goals). 0 if outside the matrix grid."""
+    n = m.shape[0]
+    if 0 <= home_goals < n and 0 <= away_goals < n:
+        return float(m[home_goals, away_goals])
+    return 0.0
+
+
 def price_matrix(
     m: np.ndarray,
     total_lines: list[float] | None = None,
     handicap_lines: list[float] | None = None,
+    score_lines: list[tuple[int, int]] | None = None,
 ) -> MarketProbs:
     total_lines = total_lines if total_lines is not None else DEFAULT_TOTAL_LINES
     handicap_lines = handicap_lines if handicap_lines is not None else DEFAULT_HANDICAP_LINES
@@ -72,4 +84,6 @@ def price_matrix(
         btts_yes=prob_btts(m),
         over={ln: prob_over(m, ln) for ln in total_lines},
         home_handicap={ln: prob_home_handicap(m, ln) for ln in handicap_lines},
+        correct_score={(h, a): prob_correct_score(m, h, a)
+                       for (h, a) in (score_lines or [])},
     )

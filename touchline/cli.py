@@ -17,7 +17,7 @@ from touchline.data.elo import EloTable, load_elo
 from touchline.edge.context import build_context
 from touchline.edge.edge import compute_edge
 from touchline.edge.model_lookup import model_prob
-from touchline.edge.quotes import load_quotes, fixture_lines, MarketQuoteRow
+from touchline.edge.quotes import load_quotes, fixture_lines, fixture_score_lines, MarketQuoteRow
 from touchline.edge.rank import rank_picks, RankedPick
 from touchline.edge.staking import size_stakes
 from touchline.model.fit import fit_ratings
@@ -76,6 +76,7 @@ def run_price(
         if not fx_quotes:
             continue
         totals, handicaps = fixture_lines(quotes, home, away)
+        scores = fixture_score_lines(quotes, home, away)
         ctx = build_context(home, away, when, venue, history)
         lam_mult, mu_mult = fixture_multipliers(home, away, overlay)
         # Apply the rating's learned home advantage only when the nominal home team
@@ -86,6 +87,7 @@ def run_price(
         probs = price_fixture(
             ratings, home, away, apply_home_adv=apply_home_adv, ctx=ctx,
             total_lines=totals or None, handicap_lines=handicaps or None,
+            score_lines=scores or None,
             lam_mult=lam_mult, mu_mult=mu_mult,
         )
         min_games = min(team_games.get(home, 0), team_games.get(away, 0))

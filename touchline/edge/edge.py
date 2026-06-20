@@ -9,7 +9,10 @@ _EDGE_BUY_THRESHOLD = 0.0  # positive edge => BUY (not a calibration target: any
 # How much to trust each market type, from the backtest: 1X2 and spreads beat the
 # base-rate predictor; totals and BTTS are well-calibrated but don't out-discriminate
 # it (near-random per-match goal counts), so their edges are down-weighted.
-_MARKET_TRUST = {"1x2": 1.0, "handicap": 1.0, "total": 0.6, "btts": 0.6}
+# correct_score is the lowest-trust market: exact scorelines are high-variance and
+# the goal model is calibrated for aggregates (1X2/totals), not individual cells.
+_MARKET_TRUST = {"1x2": 1.0, "handicap": 1.0, "total": 0.6, "btts": 0.6,
+                 "correct_score": 0.4}
 _DEFAULT_TRUST = 1.0
 
 
