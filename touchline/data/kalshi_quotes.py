@@ -8,16 +8,26 @@ from touchline.edge.quotes import MarketQuoteRow
 
 # Live Kalshi World Cup per-match series. Markets for one match share an event
 # ticker suffix (e.g. "26JUN19BRAHTI"), so the team names parsed from the GAME
-# (match-winner) titles are joined to the total/spread/BTTS markets by suffix.
-# These four series are intentionally hardcoded (not a caller argument): they are
-# the confirmed WC match series, and supplying a non-WC series would silently
-# break the suffix-join. Adding a market type is a deliberate code change here.
+# (match-winner) titles are joined to the total/spread/BTTS/correct-score markets by
+# suffix. These series are intentionally hardcoded (not a caller argument): they are
+# the confirmed WC match series the goal model can price, and supplying a non-WC
+# series would silently break the suffix-join. Adding a market type is a deliberate
+# code change here.
+#
+# NOT priced (out of scope for a team-level goal model): Kalshi's corners and
+# player-prop (goal-scorer) markets — neither openfootball nor international_results
+# carries corner or player-level data, so those would need a separate data source
+# and model entirely. Correct-score IS priceable (it's a cell of the scoreline
+# matrix) but high-variance, so it carries the lowest market trust (see edge.py).
 GAME_SERIES = "KXWCGAME"
 
 _GAME_TITLE = re.compile(r"^(?P<home>.+?)\s+vs\.?\s+(?P<away>.+?)\s+Winner", re.IGNORECASE)
 _OVER = re.compile(r"over\s+(?P<line>\d+(?:\.\d+)?)\s+goals", re.IGNORECASE)
 _SPREAD = re.compile(r"^(?P<team>.+?)\s+wins by more than\s+(?P<n>\d+(?:\.\d+)?)", re.IGNORECASE)
 _DRAW = {"tie", "draw"}
+# Correct-score titles: "New Zealand wins 3-2" / "Draw 2-2".
+_SCORE_WIN = re.compile(r"^(?P<team>.+?)\s+wins\s+(?P<a>\d+)-(?P<b>\d+)", re.IGNORECASE)
+_SCORE_DRAW = re.compile(r"^draw\s+(?P<n>\d+)-\d+", re.IGNORECASE)
 
 
 def _mid(raw: dict) -> float:
@@ -25,6 +35,12 @@ def _mid(raw: dict) -> float:
     b = float(raw.get("yes_bid_dollars") or 0)
     a = float(raw.get("yes_ask_dollars") or 0)
     return round((b + a) / 2, 4) if (a or b) else 0.0
+
+
+def _ask(raw: dict) -> float:
+    """Kalshi yes ASK (the buy price). Used for one-sided markets (correct score has
+    no bid), where a midpoint would be meaningless — you can only buy, at the ask."""
+    return round(float(raw.get("yes_ask_dollars") or 0), 4)
 
 
 def _suffix(event_ticker: str) -> str:
@@ -85,6 +101,34 @@ def parse_btts_market(raw: dict, home: str, away: str) -> MarketQuoteRow | None:
     return MarketQuoteRow(home, away, "btts", "yes", None, _mid(raw), raw.get("ticker", ""))
 
 
+def parse_score_market(raw: dict, home: str, away: str) -> MarketQuoteRow | None:
+    """KXWCSCORE '<team> wins H-A' / 'Draw N-N' -> correct_score MarketQuoteRow.
+
+    The scoreline is in yes_sub_title (e.g. "Egypt wins 4-3"); the title wraps it as
+    "Will the final score be ...?". side is "home_goals-away_goals" in the fixture's
+    orientation. ASK-priced: these markets are one-sided (no bid), so the actionable
+    cost is the ask."""
+    sub = (raw.get("yes_sub_title", "") or "").strip()
+    dm = _SCORE_DRAW.match(sub)
+    if dm:
+        n = dm.group("n")
+        return MarketQuoteRow(home, away, "correct_score", f"{n}-{n}", None,
+                              _ask(raw), raw.get("ticker", ""))
+    wm = _SCORE_WIN.match(sub)
+    if not wm:
+        return None
+    team = canonical_team(wm.group("team"))
+    a, b = wm.group("a"), wm.group("b")  # winner scored a, loser b
+    if team == home:
+        hg, ag = a, b
+    elif team == away:
+        hg, ag = b, a
+    else:
+        return None
+    return MarketQuoteRow(home, away, "correct_score", f"{hg}-{ag}", None,
+                          _ask(raw), raw.get("ticker", ""))
+
+
 def fetch_quotes(client: KalshiReadClient | None = None) -> list[MarketQuoteRow]:
     """Fetch live Kalshi WC markets across the match series and parse to MarketQuoteRows.
 
@@ -103,7 +147,7 @@ def fetch_quotes(client: KalshiReadClient | None = None) -> list[MarketQuoteRow]
             if q is not None and q.price > 0:
                 rows.append(q)
         parsers = {"KXWCTOTAL": parse_total_market, "KXWCSPREAD": parse_spread_market,
-                   "KXWCBTTS": parse_btts_market}
+                   "KXWCBTTS": parse_btts_market, "KXWCSCORE": parse_score_market}
         for series, parser in parsers.items():
             for raw in client.get_markets(series):
                 teams = teams_by_suffix.get(_suffix(raw.get("event_ticker", "")))

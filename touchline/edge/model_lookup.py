@@ -20,4 +20,11 @@ def model_prob(
     if market_type == "handicap":
         home = probs.home_handicap[line]
         return home if side == "home" else 1.0 - home
+    if market_type == "correct_score":
+        # side is "H-A" (home_goals-away_goals); the market is single-sided (YES).
+        try:
+            h, a = (int(x) for x in side.split("-"))
+        except ValueError:
+            raise ValueError(f"Bad correct_score side: {side!r}")
+        return probs.correct_score[(h, a)]
     raise ValueError(f"Unknown market_type/side: {market_type}/{side}")
