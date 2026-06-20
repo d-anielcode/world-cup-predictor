@@ -88,8 +88,12 @@ def fit_ratings(
         gradients cost ~2N+3 evaluations per step and never converge on large
         international datasets."""
         attack, defense, home_adv, rho, intercept = unpack(p)
-        log_lam = intercept + attack[hi] - defense[ai] + home_adv
-        log_mu = intercept + attack[ai] - defense[hi]
+        # Symmetric home advantage: home +half, away -half, so the intercept is the
+        # neutral-site level (not the away baseline). Keeps neutral games correctly
+        # scored when priced with apply_home_adv=False.
+        half = home_adv / 2
+        log_lam = intercept + attack[hi] - defense[ai] + half
+        log_mu = intercept + attack[ai] - defense[hi] - half
         lam = np.exp(log_lam)
         mu = np.exp(log_mu)
         ll = hg * log_lam - lam + ag * log_mu - mu  # Poisson (drop constant log k!)
@@ -126,7 +130,7 @@ def fit_ratings(
         grad_d += prior_weight * team_w * 2 * (defense - prior)
         grad_a += _CENTER_PENALTY * wsum * 2 * attack.mean() / n
         grad_d += _CENTER_PENALTY * wsum * 2 * defense.mean() / n
-        grad_H = -np.sum(w * glam)
+        grad_H = -0.5 * np.sum(w * (glam - gmu))  # home_adv enters as +half/-half
         grad_rho = -np.sum(w * grho)
         grad_c = -np.sum(w * (glam + gmu))
         grad = np.concatenate([grad_a, grad_d, [grad_H], [grad_rho], [grad_c]])

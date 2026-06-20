@@ -18,12 +18,14 @@ def test_expected_goals_neutral_site():
     assert abs(mu - math.exp(-0.4 - 0.3)) < 1e-9
 
 
-def test_home_advantage_increases_home_lambda():
-    r = _ratings()
-    lam_n, _ = r.expected_goals("Brazil", "Bolivia", apply_home_adv=False)
-    lam_h, _ = r.expected_goals("Brazil", "Bolivia", apply_home_adv=True)
-    assert lam_h > lam_n
-    assert abs(math.log(lam_h) - math.log(lam_n) - 0.25) < 1e-9
+def test_home_advantage_is_symmetric_half_split():
+    # home_adv is split +half to home, -half to away; the neutral total is preserved.
+    r = _ratings()  # home_adv = 0.25
+    lam_n, mu_n = r.expected_goals("Brazil", "Bolivia", apply_home_adv=False)
+    lam_h, mu_h = r.expected_goals("Brazil", "Bolivia", apply_home_adv=True)
+    assert lam_h > lam_n and mu_h < mu_n
+    assert abs(math.log(lam_h) - math.log(lam_n) - 0.125) < 1e-9   # +home_adv/2
+    assert abs(math.log(mu_h) - math.log(mu_n) + 0.125) < 1e-9     # -home_adv/2
 
 
 def test_unknown_team_uses_default_zero_rating():
