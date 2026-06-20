@@ -7,7 +7,10 @@ from collections import Counter
 from datetime import date
 
 from touchline import config
+import httpx
+
 from touchline.data import openfootball, worldcupjson, intl_results
+from touchline.data import elo_scrape
 from touchline.data.kalshi_read import KalshiReadClient
 from touchline.data import kalshi_quotes
 from touchline.data.elo import EloTable, load_elo
@@ -113,6 +116,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="touchline")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ingest", help="Refresh all data sources into SQLite")
+    sub.add_parser("fetch-elo",
+                   help="Scrape current eloratings.net ratings into cache/elo.csv")
     fit_p = sub.add_parser("fit-ratings", help="Fit Dixon-Coles ratings from stored matches")
     # Defaults calibrated via `backtest --calibrate` on 2018+ WC matches
     # (best log-loss at half_life=900, prior_weight=0.05; longer memory wins for
@@ -148,6 +153,20 @@ def main(argv: list[str] | None = None) -> int:
         total = run_ingest(db, historical=historical + intl, live=live)
         print(f"Ingested {total} matches "
               f"({len(historical)} WC, {len(intl)} intl, {len(live)} live).")
+        return 0
+
+    if args.command == "fetch-elo":
+        path = config.CACHE_DIR / "elo.csv"
+        try:
+            table = elo_scrape.fetch_elo()
+        except (httpx.HTTPError, ValueError) as e:
+            # Resilient like the other feeds: never overwrite a good elo.csv with a
+            # failed scrape. The fit falls back to the existing file (or 1500 prior).
+            print(f"fetch-elo failed ({e!r}); keeping existing {path}")
+            return 1
+        n = elo_scrape.write_elo_csv(table, path)
+        print(f"Wrote {n} team Elo ratings to {path} "
+              f"(top: {', '.join(t for t, _ in sorted(table.items(), key=lambda kv: -kv[1])[:5])}).")
         return 0
 
     if args.command == "fit-ratings":
