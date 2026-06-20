@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from touchline.model.ratings import Ratings
@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS matches (
     stage       TEXT,
     venue       TEXT,
     played      INTEGER NOT NULL,
-    source      TEXT NOT NULL
+    source      TEXT NOT NULL,
+    kickoff     TEXT
 );
 CREATE TABLE IF NOT EXISTS team_ratings (
     team    TEXT PRIMARY KEY,
@@ -46,6 +47,10 @@ class Database:
     def init_schema(self) -> None:
         with self._connect() as conn:
             conn.executescript(_SCHEMA)
+            # Migrate older DBs that predate the kickoff column.
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(matches)")}
+            if "kickoff" not in cols:
+                conn.execute("ALTER TABLE matches ADD COLUMN kickoff TEXT")
 
     def upsert_matches(self, matches: list[Match]) -> int:
         rows = [
@@ -53,6 +58,7 @@ class Database:
                 m.natural_key(), m.match_date.isoformat(), m.home_team, m.away_team,
                 m.home_goals, m.away_goals, m.competition, m.stage, m.venue,
                 int(m.played), m.source,
+                m.kickoff.isoformat() if m.kickoff else None,
             )
             for m in matches
         ]
@@ -60,8 +66,9 @@ class Database:
             conn.executemany(
                 """
                 INSERT INTO matches (natural_key, match_date, home_team, away_team,
-                    home_goals, away_goals, competition, stage, venue, played, source)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                    home_goals, away_goals, competition, stage, venue, played, source,
+                    kickoff)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(natural_key) DO UPDATE SET
                     home_goals=excluded.home_goals,
                     away_goals=excluded.away_goals,
@@ -69,7 +76,8 @@ class Database:
                     stage=excluded.stage,
                     venue=excluded.venue,
                     played=excluded.played,
-                    source=excluded.source
+                    source=excluded.source,
+                    kickoff=COALESCE(excluded.kickoff, matches.kickoff)
                 """,
                 rows,
             )
@@ -121,6 +129,8 @@ class Database:
                     home_goals=r["home_goals"], away_goals=r["away_goals"],
                     competition=r["competition"], stage=r["stage"], venue=r["venue"],
                     played=bool(r["played"]), source=r["source"],
+                    kickoff=(datetime.fromisoformat(r["kickoff"])
+                             if r["kickoff"] else None),
                 )
                 for r in cur.fetchall()
             ]
