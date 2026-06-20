@@ -121,8 +121,9 @@ def main(argv: list[str] | None = None) -> int:
     price_p.add_argument("--top", type=int, default=None)
     disc_p = sub.add_parser("kalshi-discover",
                             help="Dump live Kalshi World Cup markets to confirm the schema")
-    disc_p.add_argument("--series", default="KXMENWORLDCUP",
-                        help="Comma-separated Kalshi series tickers to dump")
+    disc_p.add_argument("--series", default="KXWCGAME",
+                        help="Comma-separated Kalshi series tickers to dump "
+                             "(default KXWCGAME, the per-match winner series that `daily` prices)")
     daily_p = sub.add_parser("daily", help="Full pipeline: ingest, fit, fetch Kalshi, write report")
     daily_p.add_argument("--skip-refresh", action="store_true",
                          help="Use the existing DB/ratings instead of re-ingesting and re-fitting")
@@ -257,6 +258,10 @@ def main(argv: list[str] | None = None) -> int:
         overlay = load_overlay(config.CACHE_DIR / "squad_adjustments.json")
         history = db.all_matches()
         team_games = Counter(t for m in history if m.played for t in (m.home_team, m.away_team))
+        # Upcoming fixtures with a known venue. LIMITATION: the DB has no kickoff
+        # times, so an in-progress match is still 'unplayed' here and Kalshi may be
+        # quoting live in-play odds for it — the pre-match model isn't calibrated for
+        # in-play state. Run `daily` before the day's matches kick off for clean edges.
         fixtures = [(m.home_team, m.away_team, m.match_date, m.venue)
                     for m in history if not m.played and m.venue]
         quotes = kalshi_quotes.fetch_quotes()

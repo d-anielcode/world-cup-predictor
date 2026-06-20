@@ -9,8 +9,10 @@ from touchline.edge.quotes import MarketQuoteRow
 # Live Kalshi World Cup per-match series. Markets for one match share an event
 # ticker suffix (e.g. "26JUN19BRAHTI"), so the team names parsed from the GAME
 # (match-winner) titles are joined to the total/spread/BTTS markets by suffix.
+# These four series are intentionally hardcoded (not a caller argument): they are
+# the confirmed WC match series, and supplying a non-WC series would silently
+# break the suffix-join. Adding a market type is a deliberate code change here.
 GAME_SERIES = "KXWCGAME"
-DERIVED_SERIES = ("KXWCTOTAL", "KXWCSPREAD", "KXWCBTTS")
 
 _GAME_TITLE = re.compile(r"^(?P<home>.+?)\s+vs\.?\s+(?P<away>.+?)\s+Winner", re.IGNORECASE)
 _OVER = re.compile(r"over\s+(?P<line>\d+(?:\.\d+)?)\s+goals", re.IGNORECASE)
@@ -78,6 +80,8 @@ def parse_spread_market(raw: dict, home: str, away: str) -> MarketQuoteRow | Non
 
 def parse_btts_market(raw: dict, home: str, away: str) -> MarketQuoteRow | None:
     """KXWCBTTS 'Will both teams score?' -> btts/yes MarketQuoteRow."""
+    if "both teams" not in (raw.get("title", "") or "").lower():
+        return None
     return MarketQuoteRow(home, away, "btts", "yes", None, _mid(raw), raw.get("ticker", ""))
 
 
