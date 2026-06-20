@@ -1,0 +1,374 @@
+{
+  "as_of": "2026-06-20T07:53:39.276498+00:00",
+  "note": "pre-kickoff locked predictions, $100 bankroll",
+  "games": [
+    {
+      "home": "Netherlands",
+      "away": "Sweden",
+      "venue": "Houston",
+      "model": {
+        "home": 0.599,
+        "draw": 0.208,
+        "away": 0.193
+      },
+      "market": {
+        "home": 0.575,
+        "draw": 0.225,
+        "away": 0.205
+      },
+      "buys": [
+        {
+          "mkt": "handicap",
+          "side": "home",
+          "line": -1.5,
+          "model": 0.382,
+          "mktprice": 0.325,
+          "edge": 0.057,
+          "conf": 1.0,
+          "stake": 1.17
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 3.5,
+          "model": 0.449,
+          "mktprice": 0.365,
+          "edge": 0.084,
+          "conf": 0.6,
+          "stake": 1.11
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 2.5,
+          "model": 0.667,
+          "mktprice": 0.595,
+          "edge": 0.072,
+          "conf": 0.6,
+          "stake": 1.48
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 4.5,
+          "model": 0.262,
+          "mktprice": 0.185,
+          "edge": 0.077,
+          "conf": 0.44,
+          "stake": 0.59
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 1.5,
+          "model": 0.862,
+          "mktprice": 0.805,
+          "edge": 0.057,
+          "conf": 0.6,
+          "stake": 2.44
+        },
+        {
+          "mkt": "handicap",
+          "side": "home",
+          "line": -2.5,
+          "model": 0.201,
+          "mktprice": 0.155,
+          "edge": 0.046,
+          "conf": 0.62,
+          "stake": 0.47
+        },
+        {
+          "mkt": "1x2",
+          "side": "home",
+          "line": null,
+          "model": 0.599,
+          "mktprice": 0.575,
+          "edge": 0.024,
+          "conf": 1.0,
+          "stake": 0.8
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 5.5,
+          "model": 0.134,
+          "mktprice": 0.085,
+          "edge": 0.049,
+          "conf": 0.2,
+          "stake": 0.15
+        },
+        {
+          "mkt": "btts",
+          "side": "yes",
+          "line": null,
+          "model": 0.63,
+          "mktprice": 0.615,
+          "edge": 0.015,
+          "conf": 0.6,
+          "stake": 0.33
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 0.5,
+          "model": 0.963,
+          "mktprice": 0.955,
+          "edge": 0.008,
+          "conf": 0.6,
+          "stake": 1.45
+        },
+        {
+          "mkt": "handicap",
+          "side": "away",
+          "line": 1.5,
+          "model": 0.077,
+          "mktprice": 0.075,
+          "edge": 0.002,
+          "conf": 0.3,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "3-2",
+          "line": null,
+          "model": 0.043,
+          "mktprice": 0.04,
+          "edge": 0.003,
+          "conf": 0.12,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "3-1",
+          "line": null,
+          "model": 0.072,
+          "mktprice": 0.07,
+          "edge": 0.002,
+          "conf": 0.12,
+          "stake": 0.0
+        }
+      ]
+    },
+    {
+      "home": "Germany",
+      "away": "Ivory Coast",
+      "venue": "Toronto",
+      "model": {
+        "home": 0.626,
+        "draw": 0.224,
+        "away": 0.149
+      },
+      "market": {
+        "home": 0.655,
+        "draw": 0.205,
+        "away": 0.155
+      },
+      "buys": [
+        {
+          "mkt": "1x2",
+          "side": "draw",
+          "line": null,
+          "model": 0.224,
+          "mktprice": 0.205,
+          "edge": 0.019,
+          "conf": 0.82,
+          "stake": 0.5
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-0",
+          "line": null,
+          "model": 0.068,
+          "mktprice": 0.04,
+          "edge": 0.028,
+          "conf": 0.12,
+          "stake": 0.09
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-1",
+          "line": null,
+          "model": 0.107,
+          "mktprice": 0.1,
+          "edge": 0.007,
+          "conf": 0.16,
+          "stake": 0.03
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-0",
+          "line": null,
+          "model": 0.115,
+          "mktprice": 0.11,
+          "edge": 0.005,
+          "conf": 0.18,
+          "stake": 0.02
+        },
+        {
+          "mkt": "handicap",
+          "side": "away",
+          "line": 1.5,
+          "model": 0.047,
+          "mktprice": 0.045,
+          "edge": 0.002,
+          "conf": 0.3,
+          "stake": 0.02
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-2",
+          "line": null,
+          "model": 0.022,
+          "mktprice": 0.02,
+          "edge": 0.002,
+          "conf": 0.12,
+          "stake": 0.01
+        }
+      ]
+    },
+    {
+      "home": "Ecuador",
+      "away": "Curaçao",
+      "venue": "Kansas City",
+      "model": {
+        "home": 0.849,
+        "draw": 0.119,
+        "away": 0.032
+      },
+      "market": {
+        "home": 0.865,
+        "draw": 0.095,
+        "away": 0.045
+      },
+      "buys": [
+        {
+          "mkt": "1x2",
+          "side": "draw",
+          "line": null,
+          "model": 0.119,
+          "mktprice": 0.095,
+          "edge": 0.024,
+          "conf": 0.38,
+          "stake": 0.25
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-0",
+          "line": null,
+          "model": 0.131,
+          "mktprice": 0.12,
+          "edge": 0.011,
+          "conf": 0.19,
+          "stake": 0.06
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-0",
+          "line": null,
+          "model": 0.054,
+          "mktprice": 0.04,
+          "edge": 0.014,
+          "conf": 0.12,
+          "stake": 0.04
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-1",
+          "line": null,
+          "model": 0.052,
+          "mktprice": 0.05,
+          "edge": 0.002,
+          "conf": 0.12,
+          "stake": 0.01
+        }
+      ]
+    },
+    {
+      "home": "Tunisia",
+      "away": "Japan",
+      "venue": "Monterrey (Guadalupe)",
+      "model": {
+        "home": 0.144,
+        "draw": 0.261,
+        "away": 0.595
+      },
+      "market": {
+        "home": 0.145,
+        "draw": 0.235,
+        "away": 0.625
+      },
+      "buys": [
+        {
+          "mkt": "1x2",
+          "side": "draw",
+          "line": null,
+          "model": 0.261,
+          "mktprice": 0.235,
+          "edge": 0.026,
+          "conf": 0.94,
+          "stake": 0.79
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-0",
+          "line": null,
+          "model": 0.112,
+          "mktprice": 0.08,
+          "edge": 0.032,
+          "conf": 0.13,
+          "stake": 0.11
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-0",
+          "line": null,
+          "model": 0.063,
+          "mktprice": 0.05,
+          "edge": 0.013,
+          "conf": 0.12,
+          "stake": 0.04
+        },
+        {
+          "mkt": "handicap",
+          "side": "home",
+          "line": -1.5,
+          "model": 0.039,
+          "mktprice": 0.035,
+          "edge": 0.004,
+          "conf": 0.3,
+          "stake": 0.03
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-1",
+          "line": null,
+          "model": 0.116,
+          "mktprice": 0.11,
+          "edge": 0.006,
+          "conf": 0.18,
+          "stake": 0.03
+        },
+        {
+          "mkt": "handicap",
+          "side": "home",
+          "line": -2.5,
+          "model": 0.007,
+          "mktprice": 0.005,
+          "edge": 0.002,
+          "conf": 0.3,
+          "stake": 0.02
+        },
+        {
+          "mkt": "correct_score",
+          "side": "2-0",
+          "line": null,
+          "model": 0.023,
+          "mktprice": 0.02,
+          "edge": 0.003,
+          "conf": 0.12,
+          "stake": 0.01
+        }
+      ]
+    }
+  ]
+}
