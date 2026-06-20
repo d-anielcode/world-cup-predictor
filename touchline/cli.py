@@ -13,6 +13,8 @@ from touchline.data import openfootball, worldcupjson, intl_results
 from touchline.data import elo_scrape
 from touchline.data.kalshi_read import KalshiReadClient
 from touchline.data import kalshi_quotes
+from touchline.data import kalshi_history
+from touchline.data.venues import is_host_country
 from touchline.data.elo import EloTable, load_elo
 from touchline.edge.context import build_context
 from touchline.edge.edge import compute_edge
@@ -22,7 +24,9 @@ from touchline.edge.rank import rank_picks, RankedPick
 from touchline.edge.staking import size_stakes
 from touchline.model.fit import fit_ratings
 from touchline.model.price_fixture import price_fixture
+from touchline.model.factors import FactorContext
 from touchline.model.ratings import Ratings
+from touchline.backtest.market import score_vs_market
 from touchline.models import Match, dedupe_matches
 from touchline.overlay.squad import load_overlay, fixture_multipliers
 from touchline.report.render import render_markdown, render_json
@@ -142,6 +146,10 @@ def main(argv: list[str] | None = None) -> int:
     daily_p = sub.add_parser("daily", help="Full pipeline: ingest, fit, fetch Kalshi, write report")
     daily_p.add_argument("--skip-refresh", action="store_true",
                          help="Use the existing DB/ratings instead of re-ingesting and re-fitting")
+    sub.add_parser("capture-prices",
+                   help="Backfill settled Kalshi 1X2 pre-kickoff prices into the history store")
+    sub.add_parser("backtest-market",
+                   help="Score the model against the captured market prices (vs realized outcomes)")
     bt_p = sub.add_parser("backtest", help="Score the model on completed matches")
     bt_p.add_argument("--eval-start", default="2018-01-01",
                       help="Only score matches on/after this ISO date")
@@ -237,6 +245,87 @@ def main(argv: list[str] | None = None) -> int:
         for m in priced[:12]:
             print(f"  {m.get('yes_sub_title'):16s} yes_bid={m.get('yes_bid_dollars')} "
                   f"yes_ask={m.get('yes_ask_dollars')}  ticker={m.get('ticker')}")
+        return 0
+
+    if args.command == "capture-prices":
+        db = Database(config.DB_PATH)
+        db.init_schema()
+        kickoff_lookup = {
+            (m.match_date, frozenset((m.home_team, m.away_team))): m.kickoff
+            for m in db.all_matches() if m.kickoff
+        }
+        client = KalshiReadClient()
+        try:
+            records = kalshi_history.capture_1x2_history(client, kickoff_lookup)
+        finally:
+            client.close()
+        store = config.DATA_DIR / "market_history.jsonl"
+        total = kalshi_history.write_jsonl(records, store)
+        print(f"Captured {len(records)} settled 1X2 contracts; "
+              f"store now holds {total} -> {store}")
+        return 0
+
+    if args.command == "backtest-market":
+        store = config.DATA_DIR / "market_history.jsonl"
+        records = kalshi_history.read_jsonl(store)
+        if not records:
+            print("No captured prices. Run `touchline capture-prices` first.")
+            return 1
+        by_game: dict[tuple, dict] = {}
+        for r in records:
+            by_game.setdefault((r["date"], r["home"], r["away"]), {})[r["side"]] = r
+        db = Database(config.DB_PATH)
+        db.init_schema()
+        elo_path = config.CACHE_DIR / "elo.csv"
+        elo = load_elo(elo_path) if elo_path.is_file() else EloTable()
+        played = sorted([m for m in db.all_matches()
+                         if m.played and m.home_goals is not None],
+                        key=lambda m: m.match_date)
+        fits: dict = {}
+        games = []
+        for (d, home, away), sides in by_game.items():
+            if not {"home", "draw", "away"} <= set(sides):
+                continue
+            winner = next((s for s in ("home", "draw", "away")
+                           if sides[s].get("result") == "yes"), None)
+            if winner is None:
+                continue
+            gd = date.fromisoformat(d)
+            if gd not in fits:
+                prior = [p for p in played if p.match_date < gd]
+                if not prior:
+                    continue
+                fits[gd] = fit_ratings(prior, elo, half_life_days=900.0,
+                                       prior_weight=0.05, as_of=gd)
+            r = fits[gd]
+            host = is_host_country(home)
+            probs = price_fixture(r, home, away, apply_home_adv=host,
+                                  ctx=FactorContext(home_is_host=host))
+            games.append({
+                "outcome": {"home": 0, "draw": 1, "away": 2}[winner],
+                "model": (probs.home, probs.draw, probs.away),
+                "market": (sides["home"]["market_price"],
+                           sides["draw"]["market_price"],
+                           sides["away"]["market_price"]),
+            })
+        if not games:
+            print("No scoreable games (need all 3 sides, a result, and prior matches).")
+            return 1
+        res = score_vs_market(games)
+        verdict = "model beats" if res.model_brier < res.market_brier else "market beats"
+        print(f"Model vs Market on {res.n} settled games:")
+        print(f"  Brier:        model {res.model_brier:.4f}  vs  market "
+              f"{res.market_brier:.4f}   ({verdict})")
+        print(f"  log_loss:     model {res.model_log_loss:.4f}  vs  market "
+              f"{res.market_log_loss:.4f}")
+        print(f"  top-pick acc: model {res.model_top_acc:.0%}  vs  market "
+              f"{res.market_top_acc:.0%}")
+        if res.n_bets:
+            roi = res.model_pnl / res.n_bets * 100
+            print(f"  value bets:   {res.n_bets} placed, realized P&L "
+                  f"${res.model_pnl:+.2f}/$1-flat  ({roi:+.1f}% ROI)")
+        else:
+            print("  value bets:   none (model never priced above the market)")
         return 0
 
     if args.command == "backtest":
