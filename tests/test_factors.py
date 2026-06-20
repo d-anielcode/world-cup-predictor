@@ -35,3 +35,24 @@ def test_rest_disadvantage_reduces_more_tired_team():
     lam, mu = adjust_expected_goals(1.5, 1.2, ctx)
     assert lam < 1.5
     assert mu == 1.2
+
+
+def test_host_advantage_lifts_host_supremacy_when_home():
+    # A genuine host (listed home) gets a modest goal-supremacy boost beyond the
+    # rating's generic home_adv: its expected goals rise and the opponent's fall.
+    ctx = FactorContext(home_is_host=True)
+    lam, mu = adjust_expected_goals(1.5, 1.2, ctx)
+    assert lam > 1.5 and mu < 1.2
+    assert (lam - mu) > (1.5 - 1.2)
+
+
+def test_host_advantage_applies_to_host_listed_as_away():
+    # Host-as-away: the away side is the host, so the boost goes to the away goals.
+    ctx = FactorContext(away_is_host=True)
+    lam, mu = adjust_expected_goals(1.5, 1.2, ctx)
+    assert mu > 1.2 and lam < 1.5
+
+
+def test_non_host_game_has_no_host_boost():
+    lam, mu = adjust_expected_goals(1.5, 1.2, FactorContext())
+    assert (round(lam, 9), round(mu, 9)) == (1.5, 1.2)
