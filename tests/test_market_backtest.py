@@ -1,7 +1,7 @@
 from datetime import date
 
 from touchline.data.kalshi_history import pre_kickoff_price, decode_suffix_date
-from touchline.backtest.market import score_vs_market
+from touchline.backtest.market import score_vs_market, score_binary_vs_market
 
 
 def _candle(ts, bid, ask):
@@ -55,3 +55,16 @@ def test_score_vs_market_pnl_negative_when_value_pick_loses():
     r = score_vs_market(games)
     assert r.n_bets == 1
     assert abs(r.model_pnl - (-0.50)) < 1e-9  # lost the stake (price 0.50)
+
+
+def test_score_binary_vs_market_brier_and_pnl():
+    recs = [
+        {"model": 0.70, "market": 0.55, "outcome": 1},  # value YES, hits -> +0.45
+        {"model": 0.30, "market": 0.50, "outcome": 0},  # no bet (model below market)
+    ]
+    r = score_binary_vs_market("total", recs)
+    assert r.market_type == "total" and r.n == 2
+    assert r.n_bets == 1
+    assert abs(r.model_pnl - 0.45) < 1e-9
+    # model is more accurate on both rows -> lower Brier
+    assert r.model_brier < r.market_brier

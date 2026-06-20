@@ -26,7 +26,7 @@ from touchline.model.fit import fit_ratings
 from touchline.model.price_fixture import price_fixture
 from touchline.model.factors import FactorContext
 from touchline.model.ratings import Ratings
-from touchline.backtest.market import score_vs_market
+from touchline.backtest.market import score_vs_market, score_binary_vs_market
 from touchline.models import Match, dedupe_matches
 from touchline.overlay.squad import load_overlay, fixture_multipliers
 from touchline.report.render import render_markdown, render_json
@@ -256,12 +256,12 @@ def main(argv: list[str] | None = None) -> int:
         }
         client = KalshiReadClient()
         try:
-            records = kalshi_history.capture_1x2_history(client, kickoff_lookup)
+            records = kalshi_history.capture_settled_history(client, kickoff_lookup)
         finally:
             client.close()
         store = config.DATA_DIR / "market_history.jsonl"
         total = kalshi_history.write_jsonl(records, store)
-        print(f"Captured {len(records)} settled 1X2 contracts; "
+        print(f"Captured {len(records)} settled contracts; "
               f"store now holds {total} -> {store}")
         return 0
 
@@ -271,9 +271,9 @@ def main(argv: list[str] | None = None) -> int:
         if not records:
             print("No captured prices. Run `touchline capture-prices` first.")
             return 1
-        by_game: dict[tuple, dict] = {}
+        by_game: dict[tuple, list] = {}
         for r in records:
-            by_game.setdefault((r["date"], r["home"], r["away"]), {})[r["side"]] = r
+            by_game.setdefault((r["date"], r["home"], r["away"]), []).append(r)
         db = Database(config.DB_PATH)
         db.init_schema()
         elo_path = config.CACHE_DIR / "elo.csv"
@@ -282,14 +282,9 @@ def main(argv: list[str] | None = None) -> int:
                          if m.played and m.home_goals is not None],
                         key=lambda m: m.match_date)
         fits: dict = {}
-        games = []
-        for (d, home, away), sides in by_game.items():
-            if not {"home", "draw", "away"} <= set(sides):
-                continue
-            winner = next((s for s in ("home", "draw", "away")
-                           if sides[s].get("result") == "yes"), None)
-            if winner is None:
-                continue
+        games_1x2 = []
+        binary: dict[str, list] = {"handicap": [], "total": [], "btts": []}
+        for (d, home, away), recs in by_game.items():
             gd = date.fromisoformat(d)
             if gd not in fits:
                 prior = [p for p in played if p.match_date < gd]
@@ -299,33 +294,57 @@ def main(argv: list[str] | None = None) -> int:
                                        prior_weight=0.05, as_of=gd)
             r = fits[gd]
             host = is_host_country(home)
+            tlines = sorted({rc["line"] for rc in recs
+                             if rc["market_type"] == "total" and rc["line"] is not None})
+            hlines = sorted({rc["line"] for rc in recs
+                             if rc["market_type"] == "handicap" and rc["line"] is not None})
             probs = price_fixture(r, home, away, apply_home_adv=host,
-                                  ctx=FactorContext(home_is_host=host))
-            games.append({
-                "outcome": {"home": 0, "draw": 1, "away": 2}[winner],
-                "model": (probs.home, probs.draw, probs.away),
-                "market": (sides["home"]["market_price"],
-                           sides["draw"]["market_price"],
-                           sides["away"]["market_price"]),
-            })
-        if not games:
-            print("No scoreable games (need all 3 sides, a result, and prior matches).")
+                                  ctx=FactorContext(home_is_host=host),
+                                  total_lines=tlines or None, handicap_lines=hlines or None)
+            sides = {rc["side"]: rc for rc in recs if rc["market_type"] == "1x2"}
+            if {"home", "draw", "away"} <= set(sides):
+                winner = next((s for s in ("home", "draw", "away")
+                               if sides[s].get("result") == "yes"), None)
+                if winner is not None:
+                    games_1x2.append({
+                        "outcome": {"home": 0, "draw": 1, "away": 2}[winner],
+                        "model": (probs.home, probs.draw, probs.away),
+                        "market": (sides["home"]["market_price"],
+                                   sides["draw"]["market_price"],
+                                   sides["away"]["market_price"]),
+                    })
+            for rc in recs:
+                mt = rc["market_type"]
+                if mt not in binary or rc.get("result") not in ("yes", "no"):
+                    continue
+                try:
+                    mp = model_prob(probs, mt, rc["side"], rc["line"])
+                except (KeyError, ValueError):
+                    continue
+                binary[mt].append({"model": mp, "market": rc["market_price"],
+                                   "outcome": 1 if rc["result"] == "yes" else 0})
+        if not games_1x2 and not any(binary.values()):
+            print("No scoreable contracts (need results and prior matches).")
             return 1
-        res = score_vs_market(games)
+        res = score_vs_market(games_1x2)
         verdict = "model beats" if res.model_brier < res.market_brier else "market beats"
-        print(f"Model vs Market on {res.n} settled games:")
-        print(f"  Brier:        model {res.model_brier:.4f}  vs  market "
-              f"{res.market_brier:.4f}   ({verdict})")
-        print(f"  log_loss:     model {res.model_log_loss:.4f}  vs  market "
-              f"{res.market_log_loss:.4f}")
-        print(f"  top-pick acc: model {res.model_top_acc:.0%}  vs  market "
-              f"{res.market_top_acc:.0%}")
+        print(f"Model vs Market — 1X2 on {res.n} settled games:")
+        print(f"  Brier model {res.model_brier:.4f} vs market {res.market_brier:.4f} "
+              f"({verdict});  log_loss {res.model_log_loss:.4f} vs {res.market_log_loss:.4f}; "
+              f"top-pick {res.model_top_acc:.0%} vs {res.market_top_acc:.0%}")
         if res.n_bets:
-            roi = res.model_pnl / res.n_bets * 100
-            print(f"  value bets:   {res.n_bets} placed, realized P&L "
-                  f"${res.model_pnl:+.2f}/$1-flat  ({roi:+.1f}% ROI)")
-        else:
-            print("  value bets:   none (model never priced above the market)")
+            print(f"    value bets: {res.n_bets}, P&L ${res.model_pnl:+.2f}/$1 "
+                  f"({res.model_pnl / res.n_bets * 100:+.1f}% ROI)")
+        print("\nBy market type (binary; Brier model vs market, lower=better):")
+        for mt in ("handicap", "total", "btts"):
+            recs = binary[mt]
+            if not recs:
+                continue
+            b = score_binary_vs_market(mt, recs)
+            v = "model beats" if b.model_brier < b.market_brier else "market beats"
+            roi = (b.model_pnl / b.n_bets * 100) if b.n_bets else 0.0
+            print(f"  {mt:9s} n={b.n:3d}: model {b.model_brier:.4f} vs market "
+                  f"{b.market_brier:.4f} ({v});  {b.n_bets} bets {roi:+.1f}% ROI")
         return 0
 
     if args.command == "backtest":
