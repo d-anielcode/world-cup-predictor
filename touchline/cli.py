@@ -14,6 +14,7 @@ from touchline.data import elo_scrape
 from touchline.data.kalshi_read import KalshiReadClient
 from touchline.data import kalshi_quotes
 from touchline.data import kalshi_history
+from touchline.data import footballdata
 from touchline.data.venues import is_host_country
 from touchline.data.elo import EloTable, load_elo
 from touchline.edge.context import build_context
@@ -150,6 +151,13 @@ def main(argv: list[str] | None = None) -> int:
                    help="Backfill settled Kalshi 1X2 pre-kickoff prices into the history store")
     sub.add_parser("backtest-market",
                    help="Score the model against the captured market prices (vs realized outcomes)")
+    club_p = sub.add_parser("backtest-club",
+                            help="Backtest the model vs bookmaker closing odds on a club league")
+    club_p.add_argument("--league", default="E0", help="football-data code (E0=EPL, SP1=LaLiga, ...)")
+    club_p.add_argument("--seasons", default="2425,2526",
+                        help="comma-separated football-data season codes; the last is evaluated")
+    club_p.add_argument("--half-life-days", type=float, default=365.0)
+    club_p.add_argument("--prior-weight", type=float, default=0.05)
     bt_p = sub.add_parser("backtest", help="Score the model on completed matches")
     bt_p.add_argument("--eval-start", default="2018-01-01",
                       help="Only score matches on/after this ISO date")
@@ -345,6 +353,48 @@ def main(argv: list[str] | None = None) -> int:
             roi = (b.model_pnl / b.n_bets * 100) if b.n_bets else 0.0
             print(f"  {mt:9s} n={b.n:3d}: model {b.model_brier:.4f} vs market "
                   f"{b.market_brier:.4f} ({v});  {b.n_bets} bets {roi:+.1f}% ROI")
+        return 0
+
+    if args.command == "backtest-club":
+        seasons = [s.strip() for s in args.seasons.split(",")]
+        per_season = {s: footballdata.fetch_season(args.league, s, config.CACHE_DIR)
+                      for s in seasons}
+        train_all = [m for s in seasons for m, _ in per_season[s]]
+        eval_set = sorted(per_season[seasons[-1]], key=lambda fo: fo[0].match_date)
+        fits: dict = {}
+        games = []
+        for m, (oh, od, oa) in eval_set:
+            if m.match_date not in fits:
+                prior = [p for p in train_all if p.match_date < m.match_date]
+                if not prior:
+                    continue
+                fits[m.match_date] = fit_ratings(
+                    prior, EloTable(), half_life_days=args.half_life_days,
+                    prior_weight=args.prior_weight, as_of=m.match_date)
+            r = fits[m.match_date]
+            probs = price_fixture(r, m.home_team, m.away_team,
+                                  apply_home_adv=True, ctx=FactorContext())
+            o = (0 if m.home_goals > m.away_goals
+                 else 1 if m.home_goals == m.away_goals else 2)
+            games.append({"outcome": o,
+                          "model": (probs.home, probs.draw, probs.away),
+                          "market": (1 / oh, 1 / od, 1 / oa)})  # vig-laden implied probs
+        if not games:
+            print("No eval games (need prior matches before the eval season).")
+            return 1
+        res = score_vs_market(games)
+        verdict = "model beats" if res.model_brier < res.market_brier else "market beats"
+        print(f"Club model vs bookmaker close — {args.league}, eval season "
+              f"{seasons[-1]} on {res.n} games:")
+        print(f"  Brier        model {res.model_brier:.4f} vs market "
+              f"{res.market_brier:.4f}   ({verdict})")
+        print(f"  log_loss     model {res.model_log_loss:.4f} vs market "
+              f"{res.market_log_loss:.4f}")
+        print(f"  top-pick acc model {res.model_top_acc:.0%} vs market "
+              f"{res.market_top_acc:.0%}")
+        if res.n_bets:
+            print(f"  value bets   {res.n_bets}, P&L {res.model_pnl:+.2f}/$1 "
+                  f"({res.model_pnl / res.n_bets * 100:+.1f}% ROI)")
         return 0
 
     if args.command == "backtest":
