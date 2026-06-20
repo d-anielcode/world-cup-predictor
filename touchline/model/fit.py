@@ -30,6 +30,7 @@ def fit_ratings(
     prior_weight: float,
     as_of: date,
     extra_teams: list[str] | None = None,
+    prior_min_games: float = 3.0,
 ) -> Ratings:
     """Fit Dixon-Coles attack/defense ratings by time-weighted MLE with an Elo ridge.
 
@@ -66,6 +67,13 @@ def fit_ratings(
     if len(played):
         np.add.at(team_w, hi, w)
         np.add.at(team_w, ai, w)
+    # Ridge anchoring uses a FLOORED match count: every team is regularized toward
+    # its prior as if it had at least `prior_min_games` effective matches. Without
+    # this, a fringe/defunct team with a tiny (heavily decayed) team_w gets almost
+    # no anchoring and overfits its handful of results to extreme ratings (e.g.
+    # CONIFA sides topping the strength list). Data-rich teams have team_w well
+    # above the floor, so their fit is unchanged.
+    team_w_ridge = np.maximum(team_w, prior_min_games)
 
     # Boolean masks for the four Dixon-Coles low-score corrections (vectorized).
     m00 = (hg == 0) & (ag == 0)
@@ -106,7 +114,7 @@ def fit_ratings(
         tau_vals = np.clip(tau_vals, 1e-9, None)
         ll = ll + np.log(tau_vals)
         weighted = np.sum(w * ll)
-        ridge = prior_weight * np.sum(team_w * ((attack - prior) ** 2 + (defense - prior) ** 2))
+        ridge = prior_weight * np.sum(team_w_ridge * ((attack - prior) ** 2 + (defense - prior) ** 2))
         center = _CENTER_PENALTY * wsum * (attack.mean() ** 2 + defense.mean() ** 2)
         value = -weighted + ridge + center
 
@@ -126,8 +134,8 @@ def fit_ratings(
         np.add.at(grad_a, ai, -w * gmu)    # ...and in log_mu for away side
         np.add.at(grad_d, ai, w * glam)    # defense enters as -defense (sign flip)
         np.add.at(grad_d, hi, w * gmu)
-        grad_a += prior_weight * team_w * 2 * (attack - prior)
-        grad_d += prior_weight * team_w * 2 * (defense - prior)
+        grad_a += prior_weight * team_w_ridge * 2 * (attack - prior)
+        grad_d += prior_weight * team_w_ridge * 2 * (defense - prior)
         grad_a += _CENTER_PENALTY * wsum * 2 * attack.mean() / n
         grad_d += _CENTER_PENALTY * wsum * 2 * defense.mean() / n
         grad_H = -0.5 * np.sum(w * (glam - gmu))  # home_adv enters as +half/-half
