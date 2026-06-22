@@ -349,16 +349,6 @@
           "stake": 0.03
         },
         {
-          "mkt": "handicap",
-          "side": "home",
-          "line": -2.5,
-          "model": 0.007,
-          "mktprice": 0.005,
-          "edge": 0.002,
-          "conf": 0.3,
-          "stake": 0.02
-        },
-        {
           "mkt": "correct_score",
           "side": "2-0",
           "line": null,

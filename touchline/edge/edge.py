@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 _LONGSHOT_PRICE = 0.25     # value bets priced below this are down-weighted
+_MIN_PRICE = 0.02          # below this a contract is effectively untradeable: there's
+                           # no liquidity to buy 1-cent dust, and the EV ratio
+                           # (edge/price) explodes. Such "edges" are artifacts, not bets.
 _SAMPLE_TARGET = 20.0      # games-per-team at which sample confidence saturates
 _EDGE_BUY_THRESHOLD = 0.0  # positive edge => BUY (not a calibration target: any
                            # positive-EV bet qualifies; tuning happens on confidence)
@@ -48,7 +51,12 @@ def compute_edge(
     is (per the backtest: spreads/1X2 > totals/BTTS).
     """
     edge = model_prob - market_price
-    ev = (model_prob - market_price) / market_price if market_price > 0 else 0.0
+    if market_price < _MIN_PRICE:
+        # Untradeable dust: no liquidity to buy and edge/price is unstable. Never a
+        # real BUY — this is the source of the 0%-price "picks" that corrupted P&L.
+        return Edge(model_prob=model_prob, market_price=market_price, edge=edge,
+                    ev_per_dollar=0.0, confidence=0.0, recommendation="PASS")
+    ev = edge / market_price
     trust = _MARKET_TRUST.get(market_type, _DEFAULT_TRUST)
     confidence = _sample_confidence(min_games) * _longshot_confidence(market_price) * trust
     recommendation = "BUY" if edge > _EDGE_BUY_THRESHOLD else "PASS"
