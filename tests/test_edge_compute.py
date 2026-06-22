@@ -48,3 +48,18 @@ def test_market_type_defaults_to_full_trust():
     default = compute_edge(0.60, 0.50, min_games=50)
     one_x2 = compute_edge(0.60, 0.50, min_games=50, market_type="1x2")
     assert default.confidence == one_x2.confidence
+
+
+def test_untradeable_near_zero_price_is_pass():
+    # A contract priced at ~0 has no liquidity to buy and the EV ratio (edge/price)
+    # explodes; such "edges" are artifacts, not real bets. Must be a clean PASS.
+    e = compute_edge(model_prob=0.06, market_price=0.005, min_games=50)
+    assert e.recommendation == "PASS"
+    assert e.confidence == 0.0
+    assert e.ev_per_dollar == 0.0
+
+
+def test_price_just_above_floor_still_buys():
+    e = compute_edge(model_prob=0.10, market_price=0.03, min_games=50)
+    assert e.recommendation == "BUY"
+    assert e.confidence > 0
