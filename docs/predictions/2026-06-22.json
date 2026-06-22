@@ -1,0 +1,498 @@
+{
+  "as_of": "2026-06-22T11:16:18.805444+00:00",
+  "note": "pre-kickoff locked predictions 2026-06-22",
+  "games": [
+    {
+      "home": "Argentina",
+      "away": "Austria",
+      "venue": "Dallas (Arlington)",
+      "kickoff": "2026-06-22T17:00:00+00:00",
+      "model": {
+        "home": 0.601,
+        "draw": 0.265,
+        "away": 0.134
+      },
+      "market": {
+        "home": 0.685,
+        "draw": 0.225,
+        "away": 0.115
+      },
+      "buys": [
+        {
+          "mkt": "1x2",
+          "side": "draw",
+          "line": null,
+          "model": 0.265,
+          "mktprice": 0.225,
+          "edge": 0.04,
+          "conf": 0.9,
+          "stake": 1.16
+        },
+        {
+          "mkt": "1x2",
+          "side": "away",
+          "line": null,
+          "model": 0.134,
+          "mktprice": 0.115,
+          "edge": 0.019,
+          "conf": 0.46,
+          "stake": 0.24
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-0",
+          "line": null,
+          "model": 0.176,
+          "mktprice": 0.14,
+          "edge": 0.036,
+          "conf": 0.22,
+          "stake": 0.24
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-0",
+          "line": null,
+          "model": 0.124,
+          "mktprice": 0.07,
+          "edge": 0.054,
+          "conf": 0.12,
+          "stake": 0.17
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-1",
+          "line": null,
+          "model": 0.063,
+          "mktprice": 0.04,
+          "edge": 0.023,
+          "conf": 0.12,
+          "stake": 0.07
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-1",
+          "line": null,
+          "model": 0.114,
+          "mktprice": 0.11,
+          "edge": 0.004,
+          "conf": 0.18,
+          "stake": 0.02
+        },
+        {
+          "mkt": "correct_score",
+          "side": "2-0",
+          "line": null,
+          "model": 0.141,
+          "mktprice": 0.14,
+          "edge": 0.001,
+          "conf": 0.22,
+          "stake": 0.01
+        },
+        {
+          "mkt": "handicap",
+          "side": "away",
+          "line": 2.5,
+          "model": 0.006,
+          "mktprice": 0.005,
+          "edge": 0.001,
+          "conf": 0.3,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-2",
+          "line": null,
+          "model": 0.02,
+          "mktprice": 0.02,
+          "edge": 0.0,
+          "conf": 0.12,
+          "stake": 0.0
+        }
+      ]
+    },
+    {
+      "home": "France",
+      "away": "Iraq",
+      "venue": "Philadelphia",
+      "kickoff": "2026-06-22T21:00:00+00:00",
+      "model": {
+        "home": 0.842,
+        "draw": 0.121,
+        "away": 0.037
+      },
+      "market": {
+        "home": 0.895,
+        "draw": 0.075,
+        "away": 0.025
+      },
+      "buys": [
+        {
+          "mkt": "1x2",
+          "side": "draw",
+          "line": null,
+          "model": 0.121,
+          "mktprice": 0.075,
+          "edge": 0.046,
+          "conf": 0.3,
+          "stake": 0.37
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-0",
+          "line": null,
+          "model": 0.118,
+          "mktprice": 0.08,
+          "edge": 0.038,
+          "conf": 0.13,
+          "stake": 0.13
+        },
+        {
+          "mkt": "correct_score",
+          "side": "2-0",
+          "line": null,
+          "model": 0.161,
+          "mktprice": 0.14,
+          "edge": 0.021,
+          "conf": 0.22,
+          "stake": 0.14
+        },
+        {
+          "mkt": "1x2",
+          "side": "away",
+          "line": null,
+          "model": 0.037,
+          "mktprice": 0.025,
+          "edge": 0.012,
+          "conf": 0.3,
+          "stake": 0.1
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-0",
+          "line": null,
+          "model": 0.049,
+          "mktprice": 0.02,
+          "edge": 0.029,
+          "conf": 0.12,
+          "stake": 0.09
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-1",
+          "line": null,
+          "model": 0.055,
+          "mktprice": 0.03,
+          "edge": 0.025,
+          "conf": 0.12,
+          "stake": 0.08
+        },
+        {
+          "mkt": "correct_score",
+          "side": "2-1",
+          "line": null,
+          "model": 0.069,
+          "mktprice": 0.06,
+          "edge": 0.009,
+          "conf": 0.12,
+          "stake": 0.03
+        },
+        {
+          "mkt": "handicap",
+          "side": "away",
+          "line": 1.5,
+          "model": 0.007,
+          "mktprice": 0.005,
+          "edge": 0.002,
+          "conf": 0.3,
+          "stake": 0.02
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-2",
+          "line": null,
+          "model": 0.011,
+          "mktprice": 0.01,
+          "edge": 0.001,
+          "conf": 0.12,
+          "stake": 0.0
+        }
+      ]
+    },
+    {
+      "home": "Norway",
+      "away": "Senegal",
+      "venue": "New York/New Jersey (East Rutherford)",
+      "kickoff": "2026-06-23T00:00:00+00:00",
+      "model": {
+        "home": 0.46,
+        "draw": 0.277,
+        "away": 0.263
+      },
+      "market": {
+        "home": 0.455,
+        "draw": 0.275,
+        "away": 0.285
+      },
+      "buys": [
+        {
+          "mkt": "1x2",
+          "side": "home",
+          "line": null,
+          "model": 0.46,
+          "mktprice": 0.455,
+          "edge": 0.005,
+          "conf": 1.0,
+          "stake": 0.23
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-0",
+          "line": null,
+          "model": 0.088,
+          "mktprice": 0.07,
+          "edge": 0.018,
+          "conf": 0.12,
+          "stake": 0.06
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-0",
+          "line": null,
+          "model": 0.112,
+          "mktprice": 0.1,
+          "edge": 0.012,
+          "conf": 0.16,
+          "stake": 0.05
+        },
+        {
+          "mkt": "1x2",
+          "side": "draw",
+          "line": null,
+          "model": 0.277,
+          "mktprice": 0.275,
+          "edge": 0.002,
+          "conf": 1.0,
+          "stake": 0.06
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-1",
+          "line": null,
+          "model": 0.078,
+          "mktprice": 0.07,
+          "edge": 0.008,
+          "conf": 0.12,
+          "stake": 0.03
+        },
+        {
+          "mkt": "correct_score",
+          "side": "2-0",
+          "line": null,
+          "model": 0.087,
+          "mktprice": 0.08,
+          "edge": 0.007,
+          "conf": 0.13,
+          "stake": 0.02
+        },
+        {
+          "mkt": "correct_score",
+          "side": "0-2",
+          "line": null,
+          "model": 0.045,
+          "mktprice": 0.04,
+          "edge": 0.005,
+          "conf": 0.12,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-1",
+          "line": null,
+          "model": 0.132,
+          "mktprice": 0.13,
+          "edge": 0.002,
+          "conf": 0.21,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "3-0",
+          "line": null,
+          "model": 0.042,
+          "mktprice": 0.04,
+          "edge": 0.002,
+          "conf": 0.12,
+          "stake": 0.01
+        }
+      ]
+    },
+    {
+      "home": "Jordan",
+      "away": "Algeria",
+      "venue": "San Francisco Bay Area (Santa Clara)",
+      "kickoff": "2026-06-23T03:00:00+00:00",
+      "model": {
+        "home": 0.154,
+        "draw": 0.218,
+        "away": 0.628
+      },
+      "market": {
+        "home": 0.155,
+        "draw": 0.225,
+        "away": 0.615
+      },
+      "buys": [
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 3.5,
+          "model": 0.332,
+          "mktprice": 0.275,
+          "edge": 0.057,
+          "conf": 0.6,
+          "stake": 1.19
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 2.5,
+          "model": 0.556,
+          "mktprice": 0.505,
+          "edge": 0.051,
+          "conf": 0.6,
+          "stake": 1.55
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 1.5,
+          "model": 0.792,
+          "mktprice": 0.755,
+          "edge": 0.037,
+          "conf": 0.6,
+          "stake": 2.3
+        },
+        {
+          "mkt": "btts",
+          "side": "yes",
+          "line": null,
+          "model": 0.519,
+          "mktprice": 0.485,
+          "edge": 0.034,
+          "conf": 0.6,
+          "stake": 0.98
+        },
+        {
+          "mkt": "handicap",
+          "side": "away",
+          "line": 1.5,
+          "model": 0.39,
+          "mktprice": 0.375,
+          "edge": 0.015,
+          "conf": 1.0,
+          "stake": 0.59
+        },
+        {
+          "mkt": "handicap",
+          "side": "away",
+          "line": 2.5,
+          "model": 0.196,
+          "mktprice": 0.175,
+          "edge": 0.021,
+          "conf": 0.7,
+          "stake": 0.45
+        },
+        {
+          "mkt": "1x2",
+          "side": "away",
+          "line": null,
+          "model": 0.628,
+          "mktprice": 0.615,
+          "edge": 0.013,
+          "conf": 1.0,
+          "stake": 0.82
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 4.5,
+          "model": 0.17,
+          "mktprice": 0.135,
+          "edge": 0.035,
+          "conf": 0.32,
+          "stake": 0.33
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 5.5,
+          "model": 0.075,
+          "mktprice": 0.055,
+          "edge": 0.02,
+          "conf": 0.18,
+          "stake": 0.1
+        },
+        {
+          "mkt": "total",
+          "side": "over",
+          "line": 0.5,
+          "model": 0.94,
+          "mktprice": 0.935,
+          "edge": 0.005,
+          "conf": 0.6,
+          "stake": 1.12
+        },
+        {
+          "mkt": "handicap",
+          "side": "home",
+          "line": -1.5,
+          "model": 0.051,
+          "mktprice": 0.045,
+          "edge": 0.006,
+          "conf": 0.3,
+          "stake": 0.05
+        },
+        {
+          "mkt": "handicap",
+          "side": "home",
+          "line": -2.5,
+          "model": 0.013,
+          "mktprice": 0.01,
+          "edge": 0.003,
+          "conf": 0.3,
+          "stake": 0.02
+        },
+        {
+          "mkt": "correct_score",
+          "side": "2-2",
+          "line": null,
+          "model": 0.044,
+          "mktprice": 0.04,
+          "edge": 0.004,
+          "conf": 0.12,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "1-5",
+          "line": null,
+          "model": 0.013,
+          "mktprice": 0.01,
+          "edge": 0.003,
+          "conf": 0.12,
+          "stake": 0.01
+        },
+        {
+          "mkt": "correct_score",
+          "side": "3-1",
+          "line": null,
+          "model": 0.013,
+          "mktprice": 0.01,
+          "edge": 0.003,
+          "conf": 0.12,
+          "stake": 0.01
+        }
+      ]
+    }
+  ]
+}
